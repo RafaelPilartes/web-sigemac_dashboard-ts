@@ -5,10 +5,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
-import { customStylesModalCenter } from '../../styles/custom/modals'
+import { customStylesModalCenter } from '../../../styles/custom/modals'
 import { X } from 'lucide-react'
-import { CustomInput } from '../input/InputLabel'
-import { useEffect, useState } from 'react'
+import { CustomInput } from '../../input/InputLabel'
+import { useState } from 'react'
 
 type modalType = {
   handleUpdateListing: () => void
@@ -65,7 +65,7 @@ const formSchema = z.object({
 
 type formType = z.infer<typeof formSchema>
 
-export function ModalCreateAdmin({
+export function ModalCreateNewspaper({
   handleUpdateListing,
   modalCreateRowIsOpen,
   setModalCreateRowIsOpen
@@ -74,7 +74,6 @@ export function ModalCreateAdmin({
   const [imagesSelect, setImagesSelect] = useState<string>('')
 
   const {
-    register,
     control,
     handleSubmit,
     formState: { errors }
@@ -115,7 +114,7 @@ export function ModalCreateAdmin({
           <div className="w-full h-auto max-h-[90%] max-w-3xl flex flex-col items-center p-0  rounded-md overflow-y-auto bg-dark overflow-x-hidden scroll-smooth">
             <div className="w-full py-4 px-5 flex flex-row justify-between items-center border-b-[1px] border-gray-600 ">
               <p className="text-xl font-medium text-light">
-                Criar administrador
+                Criar publicidade
               </p>
 
               <button
@@ -131,7 +130,7 @@ export function ModalCreateAdmin({
               className="w-full p-6 flex flex-col justify-center items-center gap-6"
             >
               <div className="w-full flex flex-col items-start justify-start">
-                <div className="w-full max-w-[14rem] flex items-start justify-start ">
+                <div className="w-full flex items-start justify-start ">
                   <label
                     htmlFor="dropzone-file"
                     className="w-full h-40 flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-70 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-800 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 transition-all duration-300 relative overflow-hidden"
@@ -178,62 +177,30 @@ export function ModalCreateAdmin({
                 </div>
               </div>
 
-              <div className="w-full grid gap-6 md:grid-cols-2">
-                <CustomInput
-                  type="text"
-                  htmlFor="first_name"
-                  label="Primeiro nome"
-                  placeholder="Ex.: Rafael"
-                  control={control}
-                  error={errors.first_name}
-                />
-                <CustomInput
-                  type="text"
-                  htmlFor="last_name"
-                  label="Ultimo nome"
-                  placeholder="Ex.: Pilartes"
-                  control={control}
-                  error={errors.last_name}
-                />
-              </div>
-
-              <div className="w-full grid gap-6 md:grid-cols-2">
-                <CustomInput
-                  type="phone"
-                  htmlFor="phone"
-                  label="Phone number"
-                  placeholder="Ex.: 923414621"
-                  control={control}
-                  error={errors.phone}
-                />
-                <CustomInput
-                  type="email"
-                  htmlFor="email"
-                  label="Email address"
-                  placeholder="Ex.: geral@rafaelpilartes.com"
-                  control={control}
-                  error={errors.email}
-                />
-              </div>
-
-              <div className="w-full grid gap-6 md:grid-cols-2">
-                <CustomInput
-                  type="password"
-                  htmlFor="password"
-                  label="Password"
-                  placeholder="•••••••••"
-                  control={control}
-                  error={errors.password}
-                />
-                <CustomInput
-                  type="password"
-                  htmlFor="confirm_password"
-                  label="Confirm password"
-                  placeholder="•••••••••"
-                  control={control}
-                  error={errors.confirm_password}
-                />
-              </div>
+              <CustomInput
+                type="text"
+                htmlFor="first_name"
+                label="Descrição da publicidade"
+                placeholder="Ex.: Rafael"
+                control={control}
+                error={errors.first_name}
+              />
+              <CustomInput
+                type="text"
+                htmlFor="last_name"
+                label="Link da publicidade"
+                placeholder="Ex.: Pilartes"
+                control={control}
+                error={errors.last_name}
+              />
+              <CustomInput
+                type="phone"
+                htmlFor="phone"
+                label="Local da publicidade"
+                placeholder="Ex.: 923414621"
+                control={control}
+                error={errors.phone}
+              />
 
               <div className="w-full pt-4 flex flex-row justify-between items-center border-t-[1px] border-gray-600 ">
                 <button

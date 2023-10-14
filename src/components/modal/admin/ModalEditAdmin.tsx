@@ -5,9 +5,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
-import { customStylesModalCenter } from '../../styles/custom/modals'
+import { customStylesModalCenter } from '../../../styles/custom/modals'
 import { X } from 'lucide-react'
-import { CustomInput } from '../input/InputLabel'
+import { CustomInput } from '../../input/InputLabel'
 import { useEffect, useState } from 'react'
 
 type modalType = {

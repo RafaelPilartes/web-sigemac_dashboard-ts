@@ -1,16 +1,25 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { BiNews } from 'react-icons/bi'
 import {
-  MdOutlineMedicalServices,
-  MdOutlineFolderSpecial
-} from 'react-icons/md'
-import { FaUserDoctor } from 'react-icons/fa6'
-import { GiMedicalDrip } from 'react-icons/gi'
-import { BsBookmarkPlus, BsJournalMedical } from 'react-icons/bs'
-import { LayoutDashboard, Lock, MessageSquare, User } from 'lucide-react'
+  Download,
+  Layers,
+  LayoutDashboard,
+  Lock,
+  LucideFileVideo2,
+  MailWarning,
+  Mailbox,
+  MessageSquare,
+  Newspaper,
+  Podcast,
+  Tag,
+  User
+} from 'lucide-react'
 import AccordionSidBar from '../accordion/AccordionSidBar'
 import { routsNameMain } from '../../data/routsName'
 import { AppContext } from '../../provider/AppProvider'
+import { LiaAdversal } from 'react-icons/lia'
+import { PiFolderUserBold } from 'react-icons/pi'
 
 export const Slide = () => {
   const navigate = useNavigate()
@@ -25,12 +34,27 @@ export const Slide = () => {
       accordion: false
     },
     {
-      label: 'Administradores',
+      label: 'Admin',
       icon: <Lock className="text-xs" size={18} />,
       to: routsNameMain.admins,
 
+      subMenus: [
+        {
+          label: 'Administradores',
+          icon: <LayoutDashboard size={18} />,
+          to: routsNameMain.admins,
+          notification: 0
+        },
+        {
+          label: 'Permissões',
+          icon: <LayoutDashboard size={18} />,
+          to: routsNameMain.permissions,
+          notification: 0
+        }
+      ],
+
       notification: 0,
-      accordion: false
+      accordion: true
     },
     {
       label: 'Usuários',
@@ -41,66 +65,97 @@ export const Slide = () => {
       accordion: false
     },
     {
-      label: 'Serviços',
-      icon: <MdOutlineMedicalServices className="text-xs" size={18} />,
-      to: routsNameMain.services,
-
-      // subMenus: [
-      //   {
-      //     label: 'statistic',
-      //     icon: <LayoutDashboard size={18} />,
-      //     to: routsNameMain.home,
-      //     notification: 0
-      //   }
-      // ],
+      label: 'Noticias',
+      icon: <BiNews className="text-xs" size={18} />,
+      to: routsNameMain.news,
 
       notification: 0,
       accordion: false
     },
     {
-      label: 'Especialidades',
-      icon: <MdOutlineFolderSpecial className="text-xs" size={18} />,
-      to: routsNameMain.specialty,
+      label: 'Categorias',
+      icon: <Layers className="text-xs" size={18} />,
+      to: routsNameMain.categories,
 
       notification: 0,
       accordion: false
     },
     {
-      label: 'Especialistas',
-      icon: <FaUserDoctor className="text-xs" size={18} />,
-      to: routsNameMain.experts,
+      label: 'Tags',
+      icon: <Tag className="text-xs" size={18} />,
+      to: routsNameMain.tags,
 
       notification: 0,
       accordion: false
     },
     {
-      label: 'Paciente',
-      icon: <GiMedicalDrip className="text-xs" size={18} />,
-      to: routsNameMain.patient,
+      label: 'Autores',
+      icon: <PiFolderUserBold className="text-xs" size={18} />,
+      to: routsNameMain.authors,
 
       notification: 0,
       accordion: false
     },
     {
-      label: 'Marcações',
-      icon: <BsBookmarkPlus className="text-xs" size={18} />,
-      to: routsNameMain.markings,
+      label: 'Publicidades',
+      icon: <LiaAdversal className="text-xs" size={18} />,
+      to: routsNameMain.advertising,
 
       notification: 0,
       accordion: false
     },
     {
-      label: 'Consultas',
-      icon: <BsJournalMedical className="text-xs" size={18} />,
-      to: routsNameMain.queries,
+      label: 'Videos',
+      icon: <LucideFileVideo2 className="text-xs" size={18} />,
+      to: routsNameMain.videos,
+
+      notification: 0,
+      accordion: false
+    },
+    {
+      label: 'Podcast',
+      icon: <Podcast className="text-xs" size={18} />,
+      to: routsNameMain.podcast,
+
+      notification: 0,
+      accordion: false
+    },
+    {
+      label: 'Jornais',
+      icon: <Newspaper className="text-xs" size={18} />,
+      to: routsNameMain.newspapers,
+
+      notification: 0,
+      accordion: false
+    },
+    {
+      label: 'Comentários',
+      icon: <MessageSquare className="text-xs" size={18} />,
+      to: routsNameMain.comments,
 
       notification: 0,
       accordion: false
     },
     {
       label: 'Mensagens',
-      icon: <MessageSquare className="text-xs" size={18} />,
+      icon: <Mailbox className="text-xs" size={18} />,
       to: routsNameMain.messages,
+
+      notification: 0,
+      accordion: false
+    },
+    {
+      label: 'Newsletter',
+      icon: <MailWarning className="text-xs" size={18} />,
+      to: routsNameMain.newsletter,
+
+      notification: 0,
+      accordion: false
+    },
+    {
+      label: 'Permissão de download',
+      icon: <Download className="text-xs" size={18} />,
+      to: routsNameMain.download_permissions,
 
       notification: 0,
       accordion: false
@@ -112,8 +167,8 @@ export const Slide = () => {
       <>
         {item.accordion && <AccordionSidBar items={item} />}
         {!item.accordion && (
-          <a
-            href={item.to}
+          <Link
+            to={item.to}
             className="w-full py-2 px-3 flex items-center justify-between gap-2 hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-all duration-200 hover:pl-3  "
           >
             <div className="flex flex-row items-center justify-start gap-3 ">
@@ -130,7 +185,7 @@ export const Slide = () => {
                 {item.notification}
               </span>
             )}
-          </a>
+          </Link>
         )}
       </>
     )

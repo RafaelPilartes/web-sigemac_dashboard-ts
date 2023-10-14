@@ -9,12 +9,17 @@ import Admins from '../pages/main/admins'
 import Users from '../pages/main/users'
 import Messages from '../pages/main/messages'
 import Login from '../pages/main/login'
-import Experts from '../pages/main/experts'
-import Markings from '../pages/main/markings'
-import Patient from '../pages/main/patient'
-import Queries from '../pages/main/queries'
-import Services from '../pages/main/services'
-import Specialty from '../pages/main/specialty'
+import Permission from '../pages/main/permission'
+import News from '../pages/main/news'
+import Videos from '../pages/main/videos'
+import Categories from '../pages/main/categories'
+import Tags from '../pages/main/tag'
+import Authors from '../pages/main/authors'
+import Advertising from '../pages/main/advertising'
+import Newsletters from '../pages/main/newsletters'
+import DownloadPermissions from '../pages/main/downloadPermissions'
+import Comments from '../pages/main/comments'
+import Newspapers from '../pages/main/newspapers'
 
 // const Home = React.lazy(() => import('../pages/main/home'))
 
@@ -55,6 +60,105 @@ export function Router() {
               </React.Suspense>
             }
           />
+          {/* permissions */}
+          <Route
+            path={routsNameMain.permissions}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Permission />
+              </React.Suspense>
+            }
+          />
+          {/* news */}
+          <Route
+            path={routsNameMain.news}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <News />
+              </React.Suspense>
+            }
+          />
+          {/* categories */}
+          <Route
+            path={routsNameMain.categories}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Categories />
+              </React.Suspense>
+            }
+          />
+          {/* tags */}
+          <Route
+            path={routsNameMain.tags}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Tags />
+              </React.Suspense>
+            }
+          />
+          {/* authors */}
+          <Route
+            path={routsNameMain.authors}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Authors />
+              </React.Suspense>
+            }
+          />
+          {/* Advertising */}
+          <Route
+            path={routsNameMain.advertising}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Advertising />
+              </React.Suspense>
+            }
+          />
+          {/* videos */}
+          <Route
+            path={routsNameMain.videos}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Videos />
+              </React.Suspense>
+            }
+          />
+          {/* download_permissions */}
+          <Route
+            path={routsNameMain.download_permissions}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <DownloadPermissions />
+              </React.Suspense>
+            }
+          />
+          {/* newsletter */}
+          <Route
+            path={routsNameMain.newsletter}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Newsletters />
+              </React.Suspense>
+            }
+          />
+          {/* comments */}
+          <Route
+            path={routsNameMain.comments}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Comments />
+              </React.Suspense>
+            }
+          />
+          {/* newspapers */}
+          <Route
+            path={routsNameMain.newspapers}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Newspapers />
+              </React.Suspense>
+            }
+          />
 
           {/* Users */}
           <Route
@@ -62,61 +166,6 @@ export function Router() {
             element={
               <React.Suspense fallback={<Loading />}>
                 <Users />
-              </React.Suspense>
-            }
-          />
-
-          {/* Services */}
-          <Route
-            path={routsNameMain.services}
-            element={
-              <React.Suspense fallback={<Loading />}>
-                <Services />
-              </React.Suspense>
-            }
-          />
-          {/* Specialty */}
-          <Route
-            path={routsNameMain.specialty}
-            element={
-              <React.Suspense fallback={<Loading />}>
-                <Specialty />
-              </React.Suspense>
-            }
-          />
-          {/* Experts */}
-          <Route
-            path={routsNameMain.experts}
-            element={
-              <React.Suspense fallback={<Loading />}>
-                <Experts />
-              </React.Suspense>
-            }
-          />
-          {/* Patient */}
-          <Route
-            path={routsNameMain.patient}
-            element={
-              <React.Suspense fallback={<Loading />}>
-                <Patient />
-              </React.Suspense>
-            }
-          />
-          {/* Markings */}
-          <Route
-            path={routsNameMain.markings}
-            element={
-              <React.Suspense fallback={<Loading />}>
-                <Markings />
-              </React.Suspense>
-            }
-          />
-          {/* Queries */}
-          <Route
-            path={routsNameMain.queries}
-            element={
-              <React.Suspense fallback={<Loading />}>
-                <Queries />
               </React.Suspense>
             }
           />

@@ -1,18 +1,20 @@
+import { useState } from 'react'
+
 // LIBS
 import swal from 'sweetalert'
+import { FileDown, Plus } from 'lucide-react'
 
 import { routsNameMain } from '../../data/routsName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { InputWithButton } from '../../components/input/InputWithButton'
 import { IoSearchSharp } from 'react-icons/io5'
-import { FileDown, Plus } from 'lucide-react'
-import { useState } from 'react'
-import { ModalEditAdmin } from '../../components/modal/ModalEditAdmin'
-import TableRow from '../../components/table/TableRowAdimin'
+import { TableRow } from '../../components/table/TableRowComment'
 import { SelectCustom } from '../../components/selects/SelectCustom'
-import { ModalCreateAdmin } from '../../components/modal/ModalCreateAdmin'
+import { ModalCreateComment } from '../../components/modal/comment/ModalCreateComment'
+import { ModalEditComment } from '../../components/modal/comment/ModalEditComment'
+import { IComment } from '../../interfaces/comment'
 
-function Specialty() {
+function Comments() {
   const [modalEditRowIsOpen, setModalEditRowIsOpen] = useState<boolean>(false)
   const [modalCreateRowIsOpen, setModalCreateRowIsOpen] =
     useState<boolean>(false)
@@ -21,20 +23,27 @@ function Specialty() {
 
   const itemsBreadcrumbs = [
     { label: 'Inicio', to: routsNameMain.home },
-    { label: 'Specialty', to: routsNameMain.admins },
+    { label: 'Comentarios', to: routsNameMain.comments },
     { label: 'Listagem' }
   ]
-  const tableData = [
+  const tableData: IComment[] = [
     {
-      id: '1',
-      photo:
-        'https://veja.abril.com.br/wp-content/uploads/2016/06/alx_michael-b-jordan_original.gif?w=620&h=349&crop=1',
-      first_name: 'Rafael de Lima',
-      last_name: 'Pilartes da Silva',
-      email: 'rafaelpilartes.rlps@gmail.com',
-      phone: '923414621',
-      status: 'Suspensa',
-      date: '12/09/2023'
+      id: 1,
+      user_id: 'Usuário 1',
+      news_id: 'Notícia 1',
+      comment: 'Comentário 1',
+      is_approved: 'Sim',
+      date_create: '2023-10-13',
+      date_update: '2023-10-13'
+    },
+    {
+      id: 2,
+      user_id: 'Usuário 2',
+      news_id: 'Notícia 2',
+      comment: 'Comentário 2',
+      is_approved: 'Sim',
+      date_create: '2023-10-14',
+      date_update: '2023-10-14'
     }
     // Adicione mais objetos aqui com os dados das outras linhas da tabela
   ]
@@ -110,7 +119,7 @@ function Specialty() {
         <Breadcrumbs items={itemsBreadcrumbs} />
 
         <h1 className="text-2xl font-bold text-dark dark:text-light ">
-          Especialidade
+          Comentarios
         </h1>
 
         <div className="w-full flex flex-row items-center justify-between gap-2 ">
@@ -120,7 +129,7 @@ function Specialty() {
               className="py-2 px-4 rounded-lg bg-primary-200 text-white hover:bg-primary-500 active:bg-primary-700 flex flex-row items-center justify-center gap-4 transition-all duration-300 "
             >
               <Plus />
-              Adicionar especialidade
+              Adicionar comentario
             </button>
             <button className="py-2 px-4 rounded-lg border-[1px] border-gray-200 dark:border-gray-600 hover:bg-gray-300/20 dark:hover:bg-gray-500/20 active:bg-gray-200 flex flex-row items-center justify-center gap-4 transition-all duration-300">
               <FileDown />
@@ -143,7 +152,7 @@ function Specialty() {
 
       <div className="w-full p-6 flex flex-col justify-start items-start gap-6 rounded-md bg-light dark:bg-dark">
         <h1 className="text-xl font-bold text-dark dark:text-light ">
-          Listagem Especialidade
+          Listagem comentario
         </h1>
 
         <div className="relative w-full overflow-x-auto">
@@ -156,15 +165,18 @@ function Specialty() {
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
                   Nome
                 </th>
+                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
+                  Noticia
+                </th>
+                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
+                  Comentario
+                </th>
+                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
+                  Estado
+                </th>
 
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Número
-                </th>
-                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Conta
-                </th>
-                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Registo
+                  Data
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
                   Ação
@@ -189,7 +201,7 @@ function Specialty() {
               <strong className="text-dark dark:text-light font-semibold">
                 21
               </strong>
-              Especialidade
+              Comment
             </p>
 
             <div className="flex flex-row justify-center items-center gap-4 ">
@@ -214,14 +226,14 @@ function Specialty() {
       </div>
 
       {modalCreateRowIsOpen && (
-        <ModalCreateAdmin
+        <ModalCreateComment
           handleUpdateListing={handleUpdateListing}
           modalCreateRowIsOpen={modalCreateRowIsOpen}
           setModalCreateRowIsOpen={setModalCreateRowIsOpen}
         />
       )}
       {modalEditRowIsOpen && (
-        <ModalEditAdmin
+        <ModalEditComment
           baseInfo={rowSelect}
           handleUpdateListing={handleUpdateListing}
           modalEditRowIsOpen={modalEditRowIsOpen}
@@ -232,4 +244,4 @@ function Specialty() {
   )
 }
 
-export default Specialty
+export default Comments

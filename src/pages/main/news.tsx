@@ -7,12 +7,13 @@ import { InputWithButton } from '../../components/input/InputWithButton'
 import { IoSearchSharp } from 'react-icons/io5'
 import { FileDown, Plus } from 'lucide-react'
 import { useState } from 'react'
-import { ModalEditAdmin } from '../../components/modal/ModalEditAdmin'
-import TableRow from '../../components/table/TableRowAdimin'
+import { ModalEditAdmin } from '../../components/modal/admin/ModalEditAdmin'
+import { TableRow } from '../../components/table/TableRowNews'
 import { SelectCustom } from '../../components/selects/SelectCustom'
-import { ModalCreateAdmin } from '../../components/modal/ModalCreateAdmin'
+import { ModalEditNews } from '../../components/modal/news/ModalEditNews'
+import { ModalCreateNews } from '../../components/modal/news/ModalCreateNews'
 
-function Patient() {
+function News() {
   const [modalEditRowIsOpen, setModalEditRowIsOpen] = useState<boolean>(false)
   const [modalCreateRowIsOpen, setModalCreateRowIsOpen] =
     useState<boolean>(false)
@@ -21,20 +22,61 @@ function Patient() {
 
   const itemsBreadcrumbs = [
     { label: 'Inicio', to: routsNameMain.home },
-    { label: 'Patient', to: routsNameMain.admins },
+    { label: 'Noticias', to: routsNameMain.admins },
     { label: 'Listagem' }
   ]
   const tableData = [
     {
-      id: '1',
-      photo:
-        'https://veja.abril.com.br/wp-content/uploads/2016/06/alx_michael-b-jordan_original.gif?w=620&h=349&crop=1',
-      first_name: 'Rafael de Lima',
-      last_name: 'Pilartes da Silva',
-      email: 'rafaelpilartes.rlps@gmail.com',
-      phone: '923414621',
-      status: 'Suspensa',
-      date: '12/09/2023'
+      id: 1,
+      title_news:
+        'Mia Khalifa perde emprego após comemorar ataques contra Israel',
+      resume_news:
+        'A ex-atriz de “panô”, Mia Khalifa foi demitida do cargo de consultora da empresa Red Light Holanda, responsável pela comercialização de cogumelos alucinógenos, após ter usado suas redes sociais, no fim-de-semana anterior para comemorar os ataques realizados pelo grupo extremista Hamas no território israelense.',
+      author_id: 'Autor 1',
+      category_id: 'Categoria 1',
+      description_news: 'Descrição da Notícia 1',
+      epigraph_news: 'Epígrafe da Notícia 1',
+      author_epigraph_news: 'Autor da Epígrafe 1',
+      image_news: [
+        'https://portalxaa.com/wp-content/uploads/2023/10/Captura-de-ecra-2023-10-11-as-10.55.55-1024x591.png',
+        'imagem2.jpg'
+      ],
+      description_image_news: 'Descrição das Imagens da Notícia 1',
+      photography_news: 'Fotógrafo da Notícia 1',
+      reading_time_news: '5 minutos',
+      publicity_news: 'Publicidade da Notícia 1',
+      choose_editors_news: 'Editor da Notícia 1',
+      emphasis_news: 'Ênfase da Notícia 1',
+      relevant_news: 'Sim',
+      views_news: 1000,
+      date_create: '2023-10-13',
+      date_update: '2023-10-13'
+    },
+    {
+      id: 2,
+      title_news:
+        'Cristiano Ronaldo na ‘mira’ da Justiça iraniana, e pode arriscar-se a levar 100 “chicotadas”',
+      resume_news:
+        'Segundo informações avançadas, hoje, 12 de outubro, pelo programa televisivo italiano “TgLa7”, o futebolista português Cristiano Ronaldo incorre no crime de adultério, que, no país do Golfo Pérsico, é castigado por uma pena de até “100 chicotadas”.',
+      author_id: 'Autor 2',
+      category_id: 'Categoria 2',
+      description_news: 'Descrição da Notícia 2',
+      epigraph_news: 'Epígrafe da Notícia 2',
+      author_epigraph_news: 'Autor da Epígrafe 2',
+      image_news: [
+        'https://portalxaa.com/wp-content/uploads/2023/10/652840f839c1d.jpg',
+        'imagem4.jpg'
+      ],
+      description_image_news: 'Descrição das Imagens da Notícia 2',
+      photography_news: 'Fotógrafo da Notícia 2',
+      reading_time_news: '7 minutos',
+      publicity_news: 'Publicidade da Notícia 2',
+      choose_editors_news: 'Editor da Notícia 2',
+      emphasis_news: 'Ênfase da Notícia 2',
+      relevant_news: 'Sim',
+      views_news: 1500,
+      date_create: '2023-10-14',
+      date_update: '2023-10-14'
     }
     // Adicione mais objetos aqui com os dados das outras linhas da tabela
   ]
@@ -110,7 +152,7 @@ function Patient() {
         <Breadcrumbs items={itemsBreadcrumbs} />
 
         <h1 className="text-2xl font-bold text-dark dark:text-light ">
-          Paciente
+          Noticias
         </h1>
 
         <div className="w-full flex flex-row items-center justify-between gap-2 ">
@@ -120,7 +162,7 @@ function Patient() {
               className="py-2 px-4 rounded-lg bg-primary-200 text-white hover:bg-primary-500 active:bg-primary-700 flex flex-row items-center justify-center gap-4 transition-all duration-300 "
             >
               <Plus />
-              Adicionar paciente
+              Adicionar noticia
             </button>
             <button className="py-2 px-4 rounded-lg border-[1px] border-gray-200 dark:border-gray-600 hover:bg-gray-300/20 dark:hover:bg-gray-500/20 active:bg-gray-200 flex flex-row items-center justify-center gap-4 transition-all duration-300">
               <FileDown />
@@ -143,7 +185,7 @@ function Patient() {
 
       <div className="w-full p-6 flex flex-col justify-start items-start gap-6 rounded-md bg-light dark:bg-dark">
         <h1 className="text-xl font-bold text-dark dark:text-light ">
-          Listagem Paciente
+          Listagem Noticias
         </h1>
 
         <div className="relative w-full overflow-x-auto">
@@ -154,17 +196,23 @@ function Patient() {
                   Id
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Nome
+                  Capa
+                </th>
+                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
+                  Titulo
                 </th>
 
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Número
+                  Resumo
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Conta
+                  Autor
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Registo
+                  Categoria
+                </th>
+                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
+                  Data
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
                   Ação
@@ -189,7 +237,7 @@ function Patient() {
               <strong className="text-dark dark:text-light font-semibold">
                 21
               </strong>
-              Paciente
+              Noticias
             </p>
 
             <div className="flex flex-row justify-center items-center gap-4 ">
@@ -214,14 +262,14 @@ function Patient() {
       </div>
 
       {modalCreateRowIsOpen && (
-        <ModalCreateAdmin
+        <ModalCreateNews
           handleUpdateListing={handleUpdateListing}
           modalCreateRowIsOpen={modalCreateRowIsOpen}
           setModalCreateRowIsOpen={setModalCreateRowIsOpen}
         />
       )}
       {modalEditRowIsOpen && (
-        <ModalEditAdmin
+        <ModalEditNews
           baseInfo={rowSelect}
           handleUpdateListing={handleUpdateListing}
           modalEditRowIsOpen={modalEditRowIsOpen}
@@ -232,4 +280,4 @@ function Patient() {
   )
 }
 
-export default Patient
+export default News

@@ -7,10 +7,10 @@ import { InputWithButton } from '../../components/input/InputWithButton'
 import { IoSearchSharp } from 'react-icons/io5'
 import { FileDown, Plus } from 'lucide-react'
 import { useState } from 'react'
-import { ModalEditAdmin } from '../../components/modal/ModalEditAdmin'
-import TableRow from '../../components/table/TableRowAdimin'
+import { ModalEditAdmin } from '../../components/modal/admin/ModalEditAdmin'
+import { TableRow } from '../../components/table/TableRowUser'
 import { SelectCustom } from '../../components/selects/SelectCustom'
-import { ModalCreateAdmin } from '../../components/modal/ModalCreateAdmin'
+import { ModalCreateAdmin } from '../../components/modal/admin/ModalCreateAdmin'
 
 function Users() {
   const [modalEditRowIsOpen, setModalEditRowIsOpen] = useState<boolean>(false)
@@ -21,7 +21,7 @@ function Users() {
 
   const itemsBreadcrumbs = [
     { label: 'Inicio', to: routsNameMain.home },
-    { label: 'Users', to: routsNameMain.admins },
+    { label: 'Usuario', to: routsNameMain.admins },
     { label: 'Listagem' }
   ]
   const tableData = [
@@ -33,6 +33,7 @@ function Users() {
       last_name: 'Pilartes da Silva',
       email: 'rafaelpilartes.rlps@gmail.com',
       phone: '923414621',
+      permission: 'admin',
       status: 'Suspensa',
       date: '12/09/2023'
     }

@@ -2,16 +2,21 @@ const baseMain = 'main'
 
 export const routsNameMain = {
   home: `/`,
-  services: `/services`,
-  specialty: `/specialty`,
-  experts: `/experts`,
-  patient: `/patient`,
-  markings: `/markings`,
-  queries: `/queries`,
-
   admins: `/admins`,
-  candidacy: `/candidacy`,
+  permissions: `/permissions`,
   users: `/users`,
+  news: `/news`,
+  categories: `/categories`,
+  tags: `/tags`,
+  authors: `/authors`,
+  advertising: `/advertising`,
+  videos: `/videos`,
+  podcast: `/podcast`,
+  newspapers: `/newspapers`,
+  ads: `/ads`,
   messages: `/messages`,
+  comments: `/comments`,
+  newsletter: `/newsletter`,
+  download_permissions: `/downloadPermissions`,
   login: `/login`
 }

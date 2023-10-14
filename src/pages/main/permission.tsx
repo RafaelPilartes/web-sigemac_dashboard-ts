@@ -7,12 +7,12 @@ import { InputWithButton } from '../../components/input/InputWithButton'
 import { IoSearchSharp } from 'react-icons/io5'
 import { FileDown, Plus } from 'lucide-react'
 import { useState } from 'react'
-import { ModalEditAdmin } from '../../components/modal/ModalEditAdmin'
-import TableRow from '../../components/table/TableRowAdimin'
+import { TableRow } from '../../components/table/TableRowPermission'
 import { SelectCustom } from '../../components/selects/SelectCustom'
-import { ModalCreateAdmin } from '../../components/modal/ModalCreateAdmin'
+import { ModalCreatePermissions } from '../../components/modal/permission/ModalCreatePermissions'
+import { ModalEditPermissions } from '../../components/modal/permission/ModalEditePermissions'
 
-function Queries() {
+function Permission() {
   const [modalEditRowIsOpen, setModalEditRowIsOpen] = useState<boolean>(false)
   const [modalCreateRowIsOpen, setModalCreateRowIsOpen] =
     useState<boolean>(false)
@@ -21,20 +21,14 @@ function Queries() {
 
   const itemsBreadcrumbs = [
     { label: 'Inicio', to: routsNameMain.home },
-    { label: 'Queries', to: routsNameMain.admins },
+    { label: 'Permissões', to: routsNameMain.admins },
     { label: 'Listagem' }
   ]
   const tableData = [
     {
       id: '1',
-      photo:
-        'https://veja.abril.com.br/wp-content/uploads/2016/06/alx_michael-b-jordan_original.gif?w=620&h=349&crop=1',
-      first_name: 'Rafael de Lima',
-      last_name: 'Pilartes da Silva',
-      email: 'rafaelpilartes.rlps@gmail.com',
-      phone: '923414621',
-      status: 'Suspensa',
-      date: '12/09/2023'
+      name_permission: 'Test 1',
+      code_permission: 'test_1'
     }
     // Adicione mais objetos aqui com os dados das outras linhas da tabela
   ]
@@ -110,7 +104,7 @@ function Queries() {
         <Breadcrumbs items={itemsBreadcrumbs} />
 
         <h1 className="text-2xl font-bold text-dark dark:text-light ">
-          Consultas
+          Permissões
         </h1>
 
         <div className="w-full flex flex-row items-center justify-between gap-2 ">
@@ -120,7 +114,7 @@ function Queries() {
               className="py-2 px-4 rounded-lg bg-primary-200 text-white hover:bg-primary-500 active:bg-primary-700 flex flex-row items-center justify-center gap-4 transition-all duration-300 "
             >
               <Plus />
-              Adicionar consulta
+              Adicionar permissão
             </button>
             <button className="py-2 px-4 rounded-lg border-[1px] border-gray-200 dark:border-gray-600 hover:bg-gray-300/20 dark:hover:bg-gray-500/20 active:bg-gray-200 flex flex-row items-center justify-center gap-4 transition-all duration-300">
               <FileDown />
@@ -143,7 +137,7 @@ function Queries() {
 
       <div className="w-full p-6 flex flex-col justify-start items-start gap-6 rounded-md bg-light dark:bg-dark">
         <h1 className="text-xl font-bold text-dark dark:text-light ">
-          Listagem Consultas
+          Listagem Permissões
         </h1>
 
         <div className="relative w-full overflow-x-auto">
@@ -154,17 +148,11 @@ function Queries() {
                   Id
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Nome
+                  Nome da permissão
                 </th>
 
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Número
-                </th>
-                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Conta
-                </th>
-                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Registo
+                  Código da permissão
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
                   Ação
@@ -189,7 +177,7 @@ function Queries() {
               <strong className="text-dark dark:text-light font-semibold">
                 21
               </strong>
-              Consultas
+              Permissões
             </p>
 
             <div className="flex flex-row justify-center items-center gap-4 ">
@@ -214,14 +202,14 @@ function Queries() {
       </div>
 
       {modalCreateRowIsOpen && (
-        <ModalCreateAdmin
+        <ModalCreatePermissions
           handleUpdateListing={handleUpdateListing}
           modalCreateRowIsOpen={modalCreateRowIsOpen}
           setModalCreateRowIsOpen={setModalCreateRowIsOpen}
         />
       )}
       {modalEditRowIsOpen && (
-        <ModalEditAdmin
+        <ModalEditPermissions
           baseInfo={rowSelect}
           handleUpdateListing={handleUpdateListing}
           modalEditRowIsOpen={modalEditRowIsOpen}
@@ -232,4 +220,4 @@ function Queries() {
   )
 }
 
-export default Queries
+export default Permission

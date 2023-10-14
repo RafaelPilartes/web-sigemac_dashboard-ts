@@ -1,9 +1,9 @@
 import React from 'react'
+import { Eye } from 'lucide-react'
 import { FiEdit } from 'react-icons/fi'
 import { AiFillDelete } from 'react-icons/ai'
 import { BadgeAction } from '../badge/BadgeAction'
 import { BadgeSimple } from '../badge/BadgeSimple'
-import { Eye } from 'lucide-react'
 
 interface TableRowProps {
   rowItem: {
@@ -20,7 +20,7 @@ interface TableRowProps {
   openModalEditRow: (action: any) => void
 }
 
-const TableRow: React.FC<TableRowProps> = ({
+export const TableRow: React.FC<TableRowProps> = ({
   rowItem,
   openModalEditRow,
   handleDeleteRow
@@ -82,5 +82,3 @@ const TableRow: React.FC<TableRowProps> = ({
     </tr>
   )
 }
-
-export default TableRow

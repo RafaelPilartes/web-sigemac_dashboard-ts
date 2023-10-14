@@ -1,18 +1,12 @@
 import { useEffect, useState } from 'react'
 
-import {
-  Users,
-  CarTaxiFront,
-  MessagesSquare,
-  TrendingUp,
-  TrendingDown
-} from 'lucide-react'
+import { Users, TrendingUp, TrendingDown } from 'lucide-react'
 import { TableRowCandidacyLittle } from '../../components/table/TableRowCandidacyLittle'
 import { TableRowMessageLittle } from '../../components/table/TableRowMessageLittle'
-import { BsBookmarkPlus, BsJournalMedical } from 'react-icons/bs'
-import { GiMedicalDrip } from 'react-icons/gi'
+import { LiaBuysellads } from 'react-icons/lia'
 import { routsNameMain } from '../../data/routsName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { BiNews } from 'react-icons/bi'
 
 function Home() {
   const [rowsDataUser, setRowsDataUser] = useState<any[] | null>(null)
@@ -106,9 +100,9 @@ function Home() {
         {/* Pacientes */}
         <div className="w-full p-6 flex flex-col justify-start items-start gap-3 rounded-md bg-light dark:bg-dark shadow-3xl ">
           <span className="text-blue-600 ">
-            <GiMedicalDrip size={36} />
+            <BiNews size={36} />
           </span>
-          <span className="font-normal text-base ">Total de pacientes</span>
+          <span className="font-normal text-base ">Total de noticias</span>
           <span className="text-3xl font-semibold ">
             {' 126 '}
             {rowsDataUser?.length}{' '}
@@ -124,9 +118,9 @@ function Home() {
         {/* Marcações */}
         <div className="w-full p-6 flex flex-col justify-start items-start gap-3 rounded-md bg-light dark:bg-dark shadow-3xl ">
           <span className="text-green-500 ">
-            <BsBookmarkPlus size={36} />
+            <Users size={36} />
           </span>
-          <span className="font-normal text-base ">Total de marcações</span>
+          <span className="font-normal text-base ">Total de inscritos</span>
           <span className="text-3xl font-semibold ">
             {' 46 '}
             {rowsDataCandidacy?.length}{' '}
@@ -142,9 +136,9 @@ function Home() {
         {/* Consultas */}
         <div className="w-full p-6 flex flex-col justify-start items-start gap-3 rounded-md bg-light dark:bg-dark shadow-3xl ">
           <span className="text-yellow-400 ">
-            <BsJournalMedical size={36} />
+            <LiaBuysellads size={36} />
           </span>
-          <span className="font-normal text-base ">Total de consultas</span>
+          <span className="font-normal text-base ">Total de publicidades</span>
           <span className="text-3xl font-semibold ">
             {' 17 '}
             {rowsDataMessage?.length}
@@ -158,10 +152,10 @@ function Home() {
         </div>
       </div>
 
-      <div className="w-full grid grid-cols-2 gap-6">
-        <div className="w-full p-6 flex flex-col justify-start items-start gap-6 rounded-md bg-light dark:bg-dark">
+      <div className="w-full grid grid-cols-3 gap-6">
+        <div className="w-full p-6 col-span-1 flex flex-col justify-start items-start gap-6 rounded-md bg-light dark:bg-dark">
           <h1 className="text-xl font-bold text-dark dark:text-light ">
-            Listagem marcações recentes
+            Noticias mais vistas
           </h1>
 
           <div className="relative w-full overflow-x-auto">
@@ -169,16 +163,13 @@ function Home() {
               <thead className="text-sm font-thin bg-gray-300/40 dark:bg-gray-500/40 ">
                 <tr className="border-b dark:border-gray-700">
                   <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                    Nome
+                    Id
                   </th>
                   <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                    Número
+                    Titulo
                   </th>
                   <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                    Província
-                  </th>
-                  <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                    Tipo de candidatura
+                    Visualizações
                   </th>
                   <th scope="col" className="px-3 py-3 min-w-[6rem] ">
                     Data
@@ -191,7 +182,7 @@ function Home() {
           </div>
         </div>
 
-        <div className="w-full p-6 flex flex-col justify-start items-start gap-6 rounded-md bg-light dark:bg-dark">
+        <div className="w-full p-6  col-span-2 flex flex-col justify-start items-start gap-6 rounded-md bg-light dark:bg-dark">
           <h1 className="text-xl font-bold text-dark dark:text-light ">
             Proximas consultas
           </h1>
