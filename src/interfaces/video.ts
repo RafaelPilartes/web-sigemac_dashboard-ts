@@ -1,12 +1,12 @@
-export interface IVideo {
-  id: number
-  title_video: string
+export interface VideoInterface {
+  id?: string
+  title: string
   author_id: string
   category_id: string
-  description_video: string
-  cover_video: string
-  link_video: string
-  views_video: number
-  date_create: string
-  date_update: string
+  description: string
+  cover: string
+  link: string
+  views: number
+  date_create?: string
+  date_update?: string
 }

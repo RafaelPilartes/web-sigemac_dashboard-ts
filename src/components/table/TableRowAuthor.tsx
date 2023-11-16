@@ -3,10 +3,10 @@ import { Eye } from 'lucide-react'
 import { FiEdit } from 'react-icons/fi'
 import { AiFillDelete } from 'react-icons/ai'
 import { BadgeAction } from '../badge/BadgeAction'
-import { IAuthor } from '../../interfaces/author'
+import { AuthorInterface } from '../../interfaces/author'
 
 interface TableRowProps {
-  rowItem: IAuthor
+  rowItem: AuthorInterface
   handleDeleteRow: (action: any) => void
   openModalEditRow: (action: any) => void
 }
@@ -19,28 +19,30 @@ export const TableRow: React.FC<TableRowProps> = ({
   return (
     <tr className="border-b dark:border-gray-700 hover:bg-gray-100/40 dark:hover:bg-gray-700/40 transition-all duration-300 cursor-pointer">
       <td className="px-3 py-3 min-w-[6rem]">
-        <p className="flex flex-row justify-start items-center">#10</p>
+        <p className="flex flex-row justify-start items-center">
+          {' '}
+          {rowItem.id}{' '}
+        </p>
       </td>
-      <td className="px-3 py-3 min-w-[6rem]">
+      <td className="px-3 py-3 min-w-[14rem]">
         <div className="flex flex-row justify-start items-center gap-2">
           <div className="relative w-9 h-9 overflow-hidden">
             <img
               className="w-full h-full object-cover rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-300"
-              src={rowItem.author_photo}
+              src={rowItem.photo}
               alt="Rafael"
             />
           </div>
           <div className="flex flex-col justify-center items-start">
             <span className="text-dark dark:text-light font-semibold text-sm">
-              {rowItem.name_author}
+              {rowItem.name}
             </span>
-            <span className="text-xs">{rowItem.email_author}</span>
           </div>
         </div>
       </td>
       <td className="px-3 py-3 min-w-[6rem]">
         <p className="flex flex-row justify-start items-center">
-          {rowItem.phone_author}
+          {rowItem.description}
         </p>
       </td>
       <td className="px-3 py-3 min-w-[6rem]">

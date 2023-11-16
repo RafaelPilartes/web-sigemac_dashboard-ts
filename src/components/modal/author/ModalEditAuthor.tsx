@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import Modal from 'react-modal'
+import { useEffect, useState } from 'react'
 
 // Form
 import { useForm } from 'react-hook-form'
@@ -8,54 +7,43 @@ import { z } from 'zod'
 
 import { customStylesModalCenter } from '../../../styles/custom/modals'
 import { X } from 'lucide-react'
+import Modal from 'react-modal'
 import { CustomInput } from '../../input/InputLabel'
-import { IAuthor } from '../../../interfaces/author'
+import { UploadViewModel } from '../../../viewModel/UploadViewModel'
+import { AuthorViewModel } from '../../../viewModel/authorViewModel'
+import { showToast } from '../../../utils/toasts'
+import { TextAreaLabel } from '../../textarea/TextAreaLabel'
+import { ToastContainer } from 'react-toastify'
+import { AuthorInterface } from '../../../interfaces/author'
 
 type modalType = {
-  baseInfo: IAuthor
+  baseInfo: AuthorInterface
   modalEditRowIsOpen: boolean
   handleUpdateListing: () => void
   setModalEditRowIsOpen: (e: boolean) => void
 }
 
 const formSchema = z.object({
-  author_photo: z
+  name: z
     .string()
     .nonempty('O seu nome é obrigatório!')
+    .min(6, 'O seu nome completo tem de ter no mínimo 6 caracteres')
     .refine(value => value, {
       message: 'Por favor, preencha este campo'
     }),
-  name_author: z
+  title: z
     .string()
-    .nonempty('O seu nome é obrigatório!')
+    .nonempty('O titulo é obrigatório!')
+    .min(6, 'O titulo tem de ter no mínimo 6 caracteres')
     .refine(value => value, {
       message: 'Por favor, preencha este campo'
     }),
-  title_author: z
+  description: z
     .string()
-    .nonempty('O seu nome é obrigatório!')
+    .nonempty('A descrição é obrigatório!')
+    .min(6, 'A descrição tem de ter no mínimo 6 caracteres')
     .refine(value => value, {
       message: 'Por favor, preencha este campo'
-    }),
-  description_author: z
-    .string()
-    .nonempty('O seu nome é obrigatório!')
-    .refine(value => value, {
-      message: 'Por favor, preencha este campo'
-    }),
-  email_author: z
-    .string()
-    .nonempty('O email é obrigatório!')
-    .email('Formato de email invalido')
-    .toLowerCase()
-    .trim(),
-  phone_author: z
-    .string()
-    .refine(value => /^\+?[0-9]+$/g.test(value), {
-      message: 'Formato de número invalido'
-    })
-    .refine(value => value, {
-      message: 'Por favor, preencha este campo.'
     })
 })
 
@@ -67,22 +55,25 @@ export function ModalEditAuthor({
   handleUpdateListing,
   setModalEditRowIsOpen
 }: modalType) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [imagesSelect, setImagesSelect] = useState<string>(
-    baseInfo.phone_author
-  )
-
-  const initialValues = {
-    author_photo: baseInfo.author_photo,
-    name_author: baseInfo.name_author,
-    title_author: baseInfo.title_author,
-    description_author: baseInfo.description_author,
-    email_author: baseInfo.email_author,
-    phone_author: baseInfo.phone_author,
-    date_create: baseInfo.date_create,
-    date_update: baseInfo.date_update
+  const initialValues: AuthorInterface = {
+    photo: baseInfo.photo,
+    name: baseInfo.name,
+    title: baseInfo.title,
+    description: baseInfo.description
   }
 
+  const [isSend, setIsSend] = useState<boolean>(false)
+
+  // Image
+  const [fileImageSelect, setFileImageSelect] = useState<string>('')
+  const [imagesSelect, setImagesSelect] = useState<string>(
+    baseInfo.photo as string
+  )
+
+  const authorViewModel = new AuthorViewModel()
+  const uploadViewModel = new UploadViewModel()
+
+  // useForm
   const {
     register,
     control,
@@ -93,23 +84,68 @@ export function ModalEditAuthor({
     resolver: zodResolver(formSchema)
   })
 
-  function closeModal() {
-    setModalEditRowIsOpen(false)
-  }
-  function afterOpenModal() {
-    // references are now sync'd and can be accessed.
-  }
-
   const onImageChange = (e: any) => {
     const [file] = e.target.files
-    const photo = e.target.files[0]
-    setSelectedFile(photo)
+    const image = e.target.files[0]
+    setFileImageSelect(image)
     setImagesSelect(URL.createObjectURL(file))
   }
 
-  async function handleLogin(dataForm: any) {
-    alert('sss')
-    console.log(dataForm)
+  async function handleSubmitForm(dataForm: any) {
+    setIsSend(true)
+
+    let imageUrl: string | undefined = ''
+
+    if (fileImageSelect) {
+      const imageData = new FormData()
+      imageData.append('imageAuthor', fileImageSelect)
+
+      const responseUpload = await uploadViewModel.uploadImageAuthor(imageData)
+
+      if (responseUpload.error) {
+        showToast('error', responseUpload.msg as string)
+        setIsSend(false)
+        return
+      }
+
+      imageUrl = responseUpload.imageUrl ? responseUpload.imageUrl : ''
+    }
+
+    const dataToSave = {
+      ...dataForm,
+      photo: imageUrl
+    }
+
+    console.log(imageUrl)
+
+    const response = await authorViewModel.updateAuthorData(
+      baseInfo.id as string,
+      dataToSave
+    )
+
+    console.log(response)
+
+    if (response.data.error) {
+      showToast('error', response.data.msg as string)
+    } else {
+      showToast('success', response.data.msg as string)
+      setIsSend(false)
+
+      setTimeout(() => {
+        closeModal()
+      }, 4000)
+
+      handleUpdateListing()
+    }
+  }
+
+  // Close modal
+  function closeModal() {
+    setModalEditRowIsOpen(false)
+  }
+  // After close modal
+  function afterOpenModal() {
+    // references are now sync'd and can be accessed.
   }
 
   return (
@@ -123,11 +159,11 @@ export function ModalEditAuthor({
         contentLabel="Example Modal"
       >
         <div className="w-full h-full flex items-center justify-center ">
+          <ToastContainer />
+
           <div className="w-full h-auto max-h-[90%] max-w-3xl flex flex-col items-center p-0  rounded-md overflow-y-auto bg-dark overflow-x-hidden scroll-smooth">
             <div className="w-full py-4 px-5 flex flex-row justify-between items-center border-b-[1px] border-gray-600 ">
-              <p className="text-xl font-medium text-light">
-                Editar administrador
-              </p>
+              <p className="text-xl font-medium text-light">Editar autor</p>
 
               <button
                 onClick={closeModal}
@@ -138,7 +174,7 @@ export function ModalEditAuthor({
             </div>
 
             <form
-              onSubmit={handleSubmit(handleLogin)}
+              onSubmit={handleSubmit(handleSubmitForm)}
               className="w-full p-6 flex flex-col justify-center items-center gap-6"
             >
               <div className="w-full flex flex-col items-start justify-start">
@@ -147,30 +183,32 @@ export function ModalEditAuthor({
                     htmlFor="dropzone-file"
                     className="w-full h-40 flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-70 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-800 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 transition-all duration-300 relative overflow-hidden"
                   >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg
-                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 20 16"
-                      >
-                        <path
-                          stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                        />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span>{' '}
-                        {/* or drag and drop */}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        PNG, JPG or JPEG (MAX. 3Mb)
-                      </p>
-                    </div>
+                    {!imagesSelect && (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg
+                          className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 20 16"
+                        >
+                          <path
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                          />
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold">Click to upload</span>{' '}
+                          {/* or drag and drop */}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          PNG, JPG or JPEG (MAX. 3Mb)
+                        </p>
+                      </div>
+                    )}
 
                     {imagesSelect && (
                       <img
@@ -182,6 +220,7 @@ export function ModalEditAuthor({
                     <input
                       id="dropzone-file"
                       type="file"
+                      accept="image/jpeg, image/png, image/jpg"
                       className="hidden"
                       onChange={onImageChange}
                     />
@@ -192,39 +231,30 @@ export function ModalEditAuthor({
               <div className="w-full grid gap-6 md:grid-cols-2">
                 <CustomInput
                   type="text"
-                  htmlFor="name_author"
-                  label="Nome do autor"
+                  htmlFor="name"
+                  label="Nome completo"
                   placeholder="Ex.: Rafael Pilartes"
                   control={control}
-                  error={errors.name_author}
+                  error={errors.name}
                 />
                 <CustomInput
                   type="text"
-                  htmlFor="title_author"
-                  label="Titulo do autor"
-                  placeholder="Ex.: Junior"
+                  htmlFor="title"
+                  label="O titulo do autor"
+                  placeholder="Ex.: Autor Sênior"
                   control={control}
-                  error={errors.title_author}
+                  error={errors.title}
                 />
               </div>
 
-              <div className="w-full grid gap-6 md:grid-cols-2">
-                <CustomInput
-                  type="phone"
-                  htmlFor="phone_author"
-                  label="Numero de telefone"
-                  placeholder="Ex.: 923414621"
+              <div className="w-full grid gap-6 md:grid-cols-1">
+                <TextAreaLabel
+                  // isDisabled={true}
+                  htmlFor="description"
+                  label="Descrição do autor"
+                  placeholder="Ex.: Descrição 1"
                   control={control}
-                  error={errors.phone_author}
-                />
-
-                <CustomInput
-                  type="email"
-                  htmlFor="email_author"
-                  label="Endereço de email"
-                  placeholder="Ex.: geral@rafaelpilartes.com"
-                  control={control}
-                  error={errors.email_author}
+                  error={errors.description}
                 />
               </div>
 

@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import React, { useContext, useState } from 'react'
 import { AppContext } from '../../provider/AppProvider'
+import { Link } from 'react-router-dom'
 
 interface AccordionItem {
   label: string
@@ -48,8 +49,8 @@ const Accordion: React.FC<AccordionProps> = ({ items }) => {
         <>
           <nav className="">
             {items.subMenus?.map((link, linkIndex) => (
-              <a
-                href={link.to}
+              <Link
+                to={link.to}
                 key={linkIndex}
                 className="w-full py-2 pl-10 pr-2 flex items-center justify-between cursor-pointer gap-2 hover:pl-3 hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-all duration-200 "
               >
@@ -65,7 +66,7 @@ const Accordion: React.FC<AccordionProps> = ({ items }) => {
                     {link.notification}
                   </span>
                 )}
-              </a>
+              </Link>
             ))}
           </nav>
         </>

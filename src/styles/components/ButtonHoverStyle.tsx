@@ -157,7 +157,7 @@ export const CircleHover = ({ children, className, ...props }: ButtonProps) => {
   return (
     <button
       {...props}
-      className="relative w-full flex h-[50px] px-2 rounded-md items-center justify-center overflow-hidden bg-primary-200 text-white shadow-md transition-all before:absolute before:h-0 before:w-0 before:bg-orange-600 before:duration-500 before:ease-out hover:shadow-orange-600 hover:before:h-[100%] hover:before:w-[100%] active:scale-90"
+      className="relative w-full flex h-[50px] px-2 rounded-md items-center justify-center overflow-hidden bg-primary-200 text-white shadow-md transition-all before:absolute before:h-0 before:w-0 before:bg-primary-700 before:duration-500 before:ease-out hover:shadow-primary-700 hover:before:h-[100%] hover:before:w-[100%] active:scale-90"
     >
       <span className="relative flex flex-row justify-center items-center gap-2 z-[2]">
         {children}

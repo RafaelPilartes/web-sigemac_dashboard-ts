@@ -9,45 +9,59 @@ import { customStylesModalCenter } from '../../../styles/custom/modals'
 import { X } from 'lucide-react'
 import { CustomInput } from '../../input/InputLabel'
 import { useEffect, useState } from 'react'
+import { VideoInterface } from '../../../interfaces/video'
+import { showToast, showToastRight } from '../../../utils/toasts'
+import { VideoViewModel } from '../../../viewModel/videoViewModel'
+import { UploadViewModel } from '../../../viewModel/UploadViewModel'
+import { TextAreaLabel } from '../../textarea/TextAreaLabel'
+import { SelectCustomZod } from '../../selects/SelectCustomZod'
+import { AuthorViewModel } from '../../../viewModel/authorViewModel'
+import { CategoryViewModel } from '../../../viewModel/CategoryViewModel'
+import { OptionType } from '../../../types/option'
+import { CategoryInterface } from '../../../interfaces/category'
+import { AuthorInterface } from '../../../interfaces/author'
+import { ToastContainer } from 'react-toastify'
 
 type modalType = {
-  baseInfo: any
+  baseInfo: VideoInterface
   modalEditRowIsOpen: boolean
   handleUpdateListing: () => void
   setModalEditRowIsOpen: (e: boolean) => void
 }
 
 const formSchema = z.object({
-  first_name: z
+  title: z
     .string()
-    .nonempty('O seu nome é obrigatório!')
-    .min(6, 'O seu nome completo tem de no mínimo 6 caracteres')
+    .nonempty('O titulo é obrigatório!')
+    .min(6, 'O titulo tem de ter no mínimo 6 caracteres')
     .refine(value => value, {
       message: 'Por favor, preencha este campo'
     }),
-  last_name: z
+  author_id: z
     .string()
-    .nonempty('O seu nome é obrigatório!')
-    .min(6, 'O seu nome completo tem de no mínimo 6 caracteres')
+    .nonempty('O autor é obrigatório!')
     .refine(value => value, {
       message: 'Por favor, preencha este campo'
     }),
-  phone: z
+  category_id: z
     .string()
-    .refine(value => /^\+?[0-9]+$/g.test(value), {
-      message: 'Formato de número invalido'
+    .nonempty('A categoria é obrigatório!')
+    .refine(value => value, {
+      message: 'Por favor, preencha este campo'
+    }),
+  description: z
+    .string()
+    .nonempty('A descrição é obrigatório!')
+    .min(6, 'A descrição tem de ter no mínimo 6 caracteres')
+    .refine(value => value, {
+      message: 'Por favor, preencha este campo'
+    }),
+  link: z
+    .string()
+    .nonempty('O tempo de leitura é obrigatório!')
+    .refine(value => value, {
+      message: 'Por favor, preencha este campo'
     })
-    .refine(value => value, {
-      message: 'Por favor, preencha este campo.'
-    }),
-  email: z
-    .string()
-    .nonempty('O email é obrigatório!')
-    .email('Formato de email invalido')
-    .toLowerCase()
-    .trim(),
-  password: z.string().trim(),
-  confirm_password: z.string().trim()
 })
 
 type formType = z.infer<typeof formSchema>
@@ -58,17 +72,34 @@ export function ModalEditVideo({
   handleUpdateListing,
   setModalEditRowIsOpen
 }: modalType) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [imagesSelect, setImagesSelect] = useState<string>(baseInfo.photo)
-
   const initialValues = {
-    first_name: baseInfo.first_name,
-    last_name: baseInfo.last_name,
-    phone: baseInfo.phone,
-    email: baseInfo.email,
-    password: '',
-    confirm_password: ''
+    title: baseInfo.title,
+    author_id: baseInfo.author_id,
+    category_id: baseInfo.category_id,
+    description: baseInfo.description,
+    link: baseInfo.link
   }
+
+  const [isSend, setIsSend] = useState<boolean>(false)
+
+  // Image
+  const [fileImageSelect, setFileImageSelect] = useState<string>('')
+  const [imagesSelect, setImagesSelect] = useState<string>(
+    baseInfo.cover as string
+  )
+
+  const [rowsAuthorData, setRowsAuthorData] = useState<OptionType[] | null>(
+    null
+  )
+  const [rowsCategoryData, setRowsCategoryData] = useState<OptionType[] | null>(
+    null
+  )
+
+  const videoViewModel = new VideoViewModel()
+  const uploadViewModel = new UploadViewModel()
+
+  const authorViewModel = new AuthorViewModel()
+  const categoryViewModel = new CategoryViewModel()
 
   const {
     register,
@@ -80,24 +111,124 @@ export function ModalEditVideo({
     resolver: zodResolver(formSchema)
   })
 
+  // Close modal
   function closeModal() {
     setModalEditRowIsOpen(false)
   }
+  // After close modal
   function afterOpenModal() {
     // references are now sync'd and can be accessed.
   }
 
   const onImageChange = (e: any) => {
     const [file] = e.target.files
-    const photo = e.target.files[0]
-    setSelectedFile(photo)
+    const image = e.target.files[0]
+    setFileImageSelect(image)
     setImagesSelect(URL.createObjectURL(file))
   }
 
-  async function handleLogin(dataForm: any) {
-    alert('sss')
-    console.log(dataForm)
+  async function handleSubmitForm(dataForm: any) {
+    setIsSend(true)
+
+    let imageUrl: string | undefined = ''
+
+    if (fileImageSelect) {
+      const imageData = new FormData()
+      imageData.append('imageVideo', fileImageSelect)
+
+      const responseUpload = await uploadViewModel.uploadImageVideo(imageData)
+
+      if (responseUpload.error) {
+        showToast('error', responseUpload.msg as string)
+        setIsSend(false)
+        return
+      }
+
+      imageUrl = responseUpload.imageUrl ? responseUpload.imageUrl : ''
+    }
+
+    const dataToSave = {
+      ...dataForm,
+      cover: imageUrl
+    }
+
+    console.log(dataToSave)
+
+    const response = await videoViewModel.updateVideoData(
+      baseInfo.id as string,
+      dataToSave
+    )
+
+    console.log(response.data)
+
+    if (response.data.error) {
+      showToast('error', response.data.msg as string)
+    } else {
+      showToast('success', response.data.msg as string)
+      setIsSend(false)
+
+      setTimeout(() => {
+        closeModal()
+      }, 4000)
+
+      handleUpdateListing()
+    }
   }
+
+  // Get author data
+  function fetchAuthorData() {
+    // Clear
+    setRowsAuthorData(null)
+
+    // Get
+    authorViewModel.getAllAuthorData().then(response => {
+      if (response.data.error) {
+        showToastRight('error', response.data.msg as string)
+      } else {
+        const arrayData = response.data.data as AuthorInterface[]
+
+        const listData = arrayData
+
+        const authorOptions: OptionType[] = listData?.map(obj => ({
+          value: obj.id as string,
+          label: obj.name as string
+        }))
+
+        console.log(authorOptions)
+
+        setRowsAuthorData(authorOptions)
+      }
+    })
+  }
+
+  // Get Category data
+  function fetchCategoryData() {
+    // Clear
+    setRowsCategoryData(null)
+
+    // Get
+    categoryViewModel.getAllCategoryData().then(response => {
+      if (response.data.error) {
+        showToastRight('error', response.data.msg as string)
+      } else {
+        const arrayData = response.data.data as CategoryInterface[]
+
+        const listData = arrayData
+
+        const categoryOptions: OptionType[] = listData?.map(obj => ({
+          value: obj.id as string,
+          label: obj.category as string
+        }))
+
+        setRowsCategoryData(categoryOptions)
+      }
+    })
+  }
+
+  useEffect(() => {
+    fetchAuthorData()
+    fetchCategoryData()
+  }, [])
 
   return (
     <>
@@ -110,11 +241,11 @@ export function ModalEditVideo({
         contentLabel="Example Modal"
       >
         <div className="w-full h-full flex items-center justify-center ">
+          <ToastContainer />
+
           <div className="w-full h-auto max-h-[90%] max-w-3xl flex flex-col items-center p-0  rounded-md overflow-y-auto bg-dark overflow-x-hidden scroll-smooth">
             <div className="w-full py-4 px-5 flex flex-row justify-between items-center border-b-[1px] border-gray-600 ">
-              <p className="text-xl font-medium text-light">
-                Editar administrador
-              </p>
+              <p className="text-xl font-medium text-light">Editar video</p>
 
               <button
                 onClick={closeModal}
@@ -125,39 +256,45 @@ export function ModalEditVideo({
             </div>
 
             <form
-              onSubmit={handleSubmit(handleLogin)}
+              onSubmit={handleSubmit(handleSubmitForm)}
               className="w-full p-6 flex flex-col justify-center items-center gap-6"
             >
               <div className="w-full flex flex-col items-start justify-start">
+                <label className="block mb-2 text-sm font-medium text-light">
+                  Imagens da notícia
+                </label>
+
                 <div className="w-full max-w-[14rem] flex items-start justify-start ">
                   <label
                     htmlFor="dropzone-file"
                     className="w-full h-40 flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-70 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-800 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 transition-all duration-300 relative overflow-hidden"
                   >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg
-                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 20 16"
-                      >
-                        <path
-                          stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                        />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span>{' '}
-                        {/* or drag and drop */}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        PNG, JPG or JPEG (MAX. 3Mb)
-                      </p>
-                    </div>
+                    {!imagesSelect && (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg
+                          className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 20 16"
+                        >
+                          <path
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                          />
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold">Click to upload</span>{' '}
+                          {/* or drag and drop */}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          PNG, JPG or JPEG (MAX. 3Mb)
+                        </p>
+                      </div>
+                    )}
 
                     {imagesSelect && (
                       <img
@@ -169,6 +306,7 @@ export function ModalEditVideo({
                     <input
                       id="dropzone-file"
                       type="file"
+                      accept="image/jpeg, image/png, image/jpg"
                       className="hidden"
                       onChange={onImageChange}
                     />
@@ -176,60 +314,55 @@ export function ModalEditVideo({
                 </div>
               </div>
 
-              <div className="w-full grid gap-6 md:grid-cols-2">
+              <div className="w-full">
                 <CustomInput
                   type="text"
-                  htmlFor="first_name"
-                  label="Primeiro nome"
-                  placeholder="Ex.: Rafael"
+                  htmlFor="title"
+                  label="Titulo"
+                  placeholder="Ex.: Titulo do video"
                   control={control}
-                  error={errors.first_name}
+                  error={errors.title}
                 />
-                <CustomInput
-                  type="text"
-                  htmlFor="last_name"
-                  label="Ultimo nome"
-                  placeholder="Ex.: Pilartes"
+              </div>
+
+              <div className="w-full grid gap-6 md:grid-cols-1">
+                <TextAreaLabel
+                  // isDisabled={true}
+                  htmlFor="description"
+                  label="Descrição"
+                  placeholder="Ex.: Descrição do video"
                   control={control}
-                  error={errors.last_name}
+                  error={errors.description}
                 />
               </div>
 
               <div className="w-full grid gap-6 md:grid-cols-2">
-                <CustomInput
-                  type="phone"
-                  htmlFor="phone"
-                  label="Phone number"
-                  placeholder="Ex.: 923414621"
+                <SelectCustomZod
+                  name="author_id"
+                  label="Autor"
                   control={control}
-                  error={errors.phone}
+                  error={errors.author_id}
+                  options={rowsAuthorData as OptionType[]}
+                  onOptionChange={() => null}
                 />
-                <CustomInput
-                  type="email"
-                  htmlFor="email"
-                  label="Email address"
-                  placeholder="Ex.: geral@rafaelpilartes.com"
+                <SelectCustomZod
+                  name="category_id"
+                  label="Categoria"
                   control={control}
-                  error={errors.email}
+                  error={errors.category_id}
+                  options={rowsCategoryData as OptionType[]}
+                  onOptionChange={() => null}
                 />
               </div>
 
-              <div className="w-full grid gap-6 md:grid-cols-2">
+              <div className="w-full grid gap-6 md:grid-cols-1">
                 <CustomInput
-                  type="password"
-                  htmlFor="password"
-                  label="Password"
-                  placeholder="•••••••••"
+                  type="text"
+                  htmlFor="link"
+                  label="Link do video"
+                  placeholder="Ex.: https://www.youtube.com/@jasei"
                   control={control}
-                  error={errors.password}
-                />
-                <CustomInput
-                  type="password"
-                  htmlFor="confirm_password"
-                  label="Confirm password"
-                  placeholder="•••••••••"
-                  control={control}
-                  error={errors.confirm_password}
+                  error={errors.link}
                 />
               </div>
 

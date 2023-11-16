@@ -1,9 +1,9 @@
-import React from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 
 interface CustomInputProps {
   control?: any // Controlador do react-hook-form
   error?: any // Erros do react-hook-form
+  isDisabled?: boolean // Erros do react-hook-form
   type: string
   htmlFor: string
   label: string
@@ -14,6 +14,7 @@ interface CustomInputProps {
 export function CustomInput({
   control,
   error,
+  isDisabled = false,
   type,
   htmlFor,
   label,
@@ -30,9 +31,11 @@ export function CustomInput({
           {label}
         </label>
         <Controller
+          disabled={isDisabled}
           name={htmlFor}
           control={control}
           rules={{ required: 'Por favor, preencha este campo!' }}
+          defaultValue=""
           render={({ field }) => (
             <input
               type={type}

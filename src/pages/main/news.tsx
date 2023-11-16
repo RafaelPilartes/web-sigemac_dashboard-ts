@@ -6,80 +6,42 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { InputWithButton } from '../../components/input/InputWithButton'
 import { IoSearchSharp } from 'react-icons/io5'
 import { FileDown, Plus } from 'lucide-react'
-import { useState } from 'react'
-import { ModalEditAdmin } from '../../components/modal/admin/ModalEditAdmin'
+import { useEffect, useState } from 'react'
 import { TableRow } from '../../components/table/TableRowNews'
 import { SelectCustom } from '../../components/selects/SelectCustom'
 import { ModalEditNews } from '../../components/modal/news/ModalEditNews'
 import { ModalCreateNews } from '../../components/modal/news/ModalCreateNews'
+import { NewsInterface } from '../../interfaces/news'
+import { NewsViewModel } from '../../viewModel/newsViewModel'
+import ExportToExcel from '../../components/ExportToExcel'
+import { showToastRight } from '../../utils/toasts'
+import { ModalSeeNews } from '../../components/modal/news/ModalSeeNews'
 
 function News() {
+  const [rowsData, setRowsData] = useState<NewsInterface[] | null>(null)
+
+  const [dataToExport, setDataToExport] = useState<any[]>([])
+
+  const [modalSeeRowIsOpen, setModalSeeRowIsOpen] = useState<boolean>(false)
   const [modalEditRowIsOpen, setModalEditRowIsOpen] = useState<boolean>(false)
   const [modalCreateRowIsOpen, setModalCreateRowIsOpen] =
     useState<boolean>(false)
   const [rowSelect, setRowSelect] = useState<any | null>(null)
-  const [selectedValue, setSelectedValue] = useState('8')
+
+  // Search
+  const [termForSearch, setTermForSearch] = useState<string>('')
+
+  const [docsPerPage, setDocsPerPage] = useState<string>('8')
+  const [totalDocs, setTotalDocs] = useState<number>(0)
+
+  const newsViewModel = new NewsViewModel()
 
   const itemsBreadcrumbs = [
     { label: 'Inicio', to: routsNameMain.home },
     { label: 'Noticias', to: routsNameMain.admins },
     { label: 'Listagem' }
   ]
-  const tableData = [
-    {
-      id: 1,
-      title_news:
-        'Mia Khalifa perde emprego após comemorar ataques contra Israel',
-      resume_news:
-        'A ex-atriz de “panô”, Mia Khalifa foi demitida do cargo de consultora da empresa Red Light Holanda, responsável pela comercialização de cogumelos alucinógenos, após ter usado suas redes sociais, no fim-de-semana anterior para comemorar os ataques realizados pelo grupo extremista Hamas no território israelense.',
-      author_id: 'Autor 1',
-      category_id: 'Categoria 1',
-      description_news: 'Descrição da Notícia 1',
-      epigraph_news: 'Epígrafe da Notícia 1',
-      author_epigraph_news: 'Autor da Epígrafe 1',
-      image_news: [
-        'https://portalxaa.com/wp-content/uploads/2023/10/Captura-de-ecra-2023-10-11-as-10.55.55-1024x591.png',
-        'imagem2.jpg'
-      ],
-      description_image_news: 'Descrição das Imagens da Notícia 1',
-      photography_news: 'Fotógrafo da Notícia 1',
-      reading_time_news: '5 minutos',
-      publicity_news: 'Publicidade da Notícia 1',
-      choose_editors_news: 'Editor da Notícia 1',
-      emphasis_news: 'Ênfase da Notícia 1',
-      relevant_news: 'Sim',
-      views_news: 1000,
-      date_create: '2023-10-13',
-      date_update: '2023-10-13'
-    },
-    {
-      id: 2,
-      title_news:
-        'Cristiano Ronaldo na ‘mira’ da Justiça iraniana, e pode arriscar-se a levar 100 “chicotadas”',
-      resume_news:
-        'Segundo informações avançadas, hoje, 12 de outubro, pelo programa televisivo italiano “TgLa7”, o futebolista português Cristiano Ronaldo incorre no crime de adultério, que, no país do Golfo Pérsico, é castigado por uma pena de até “100 chicotadas”.',
-      author_id: 'Autor 2',
-      category_id: 'Categoria 2',
-      description_news: 'Descrição da Notícia 2',
-      epigraph_news: 'Epígrafe da Notícia 2',
-      author_epigraph_news: 'Autor da Epígrafe 2',
-      image_news: [
-        'https://portalxaa.com/wp-content/uploads/2023/10/652840f839c1d.jpg',
-        'imagem4.jpg'
-      ],
-      description_image_news: 'Descrição das Imagens da Notícia 2',
-      photography_news: 'Fotógrafo da Notícia 2',
-      reading_time_news: '7 minutos',
-      publicity_news: 'Publicidade da Notícia 2',
-      choose_editors_news: 'Editor da Notícia 2',
-      emphasis_news: 'Ênfase da Notícia 2',
-      relevant_news: 'Sim',
-      views_news: 1500,
-      date_create: '2023-10-14',
-      date_update: '2023-10-14'
-    }
-    // Adicione mais objetos aqui com os dados das outras linhas da tabela
-  ]
+
   const optionsRowPerPage = [
     { value: '8', label: '8' },
     { value: '14', label: '14' },
@@ -90,61 +52,138 @@ function News() {
     { value: 'Todos', label: 'Todos' }
   ]
 
-  const rowsTable = tableData.map((item, index) => {
+  const rowsTable = rowsData?.map((item, index) => {
     return (
       <TableRow
         key={index}
         rowItem={item}
+        openModalSeeRow={openModalSeeRow}
         openModalEditRow={openModalEditRow}
         handleDeleteRow={handleDeleteRow}
       />
     )
   })
-  const fetchData = () => {
-    // fetchData()
+
+  // Get data
+  function fetchData(limit: string) {
+    // Clear
+    setRowsData(null)
+
+    // Get
+    newsViewModel.getAllNewsData().then(response => {
+      if (response.data.error) {
+        showToastRight('error', response.data.msg as string)
+      } else {
+        const arrayData = response.data.data as unknown as NewsInterface[]
+        setTotalDocs(arrayData.length)
+        console.log(arrayData)
+
+        const listData = arrayData.slice(0, Number(limit))
+
+        setRowsData(listData as NewsInterface[])
+      }
+    })
   }
-  function openModalEditRow(item: any) {
-    setRowSelect(item)
-    setModalEditRowIsOpen(true)
+
+  // Get more data
+  function fetchMoreData() {
+    // setDocsPerPage(docsPerPage + selectedValue)
+    fetchData(docsPerPage + docsPerPage)
   }
-  function openModalCreateRow(item: any) {
-    setModalCreateRowIsOpen(true)
+
+  // Search cata
+  async function searchDocs() {
+    if (termForSearch == '') {
+      fetchData(docsPerPage)
+    } else {
+      newsViewModel.getAllNewsByTermData(termForSearch).then(response => {
+        console.log(response)
+
+        setRowsData(response.data.data as unknown as NewsInterface[])
+        console.log(response)
+      })
+    }
   }
+
+  // Update Listing
+  const handleUpdateListing = () => {
+    fetchData(docsPerPage)
+  }
+
+  // Delete row
   function handleDeleteRow(id: string) {
-    alert(id)
     swal({
       title: 'Tem certeza?',
-      text: 'Uma vez excluído, você não poderá recuperar este usuario!',
+      text: 'Uma vez excluído, você não poderá recuperar está news!',
       buttons: ['Cancelar', 'Confirmar'],
       icon: 'warning',
       dangerMode: true
     }).then(async willDelete => {
       if (willDelete) {
-        try {
-          // const response = await deleteEmployees(documentId)
+        await newsViewModel.deleteNewsData(id).then(response => {
+          console.log(response)
 
-          swal('Deletado com sucesso', {
-            icon: 'success'
-          })
-        } catch (error) {
-          swal(`Erro ao deletar registo: ${error}`, {
-            icon: 'error'
-          })
-          console.error('', error)
-        }
+          if (response.data.error) {
+            swal(`Erro ao deletar registo: ${response.data.msg}`, {
+              icon: 'error'
+            })
+            console.error('', response.data.msg)
+          } else {
+            swal('Deletado com sucesso', {
+              icon: 'success'
+            })
+
+            fetchData(docsPerPage)
+          }
+        })
       } else {
-        swal('O administrador está seguro!', {
+        swal('A news está seguro!', {
           icon: 'error'
         })
       }
     })
   }
-  const handleUpdateListing = () => {
-    fetchData()
-  }
+
+  // Change rows per page
   const handleSelectChange = (value: string) => {
-    setSelectedValue(value)
+    setDocsPerPage(value)
+    fetchData(value)
   }
+
+  // Open modal see
+  function openModalSeeRow(item: any) {
+    setRowSelect(item)
+    setModalSeeRowIsOpen(true)
+  }
+
+  // Open modal edit
+  function openModalEditRow(item: any) {
+    setRowSelect(item)
+    setModalEditRowIsOpen(true)
+  }
+
+  // Open modal create
+  function openModalCreateRow() {
+    setModalCreateRowIsOpen(true)
+  }
+
+  useEffect(() => {
+    fetchData(docsPerPage)
+  }, [])
+
+  useEffect(() => {
+    const newData = rowsData?.map(doc => ({
+      Id: `${doc.id}`,
+      Titulo: doc.title,
+      Resumo: doc.resume,
+      Descricao: doc.description,
+      Visualizacoes: doc.views,
+      Data_de_criacao: doc.date_create,
+      Ultima_atualização: doc.date_update
+    }))
+
+    setDataToExport(newData as any)
+  }, [rowsData])
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-start gap-6">
@@ -164,20 +203,24 @@ function News() {
               <Plus />
               Adicionar noticia
             </button>
-            <button className="py-2 px-4 rounded-lg border-[1px] border-gray-200 dark:border-gray-600 hover:bg-gray-300/20 dark:hover:bg-gray-500/20 active:bg-gray-200 flex flex-row items-center justify-center gap-4 transition-all duration-300">
-              <FileDown />
-              Exportar
-            </button>
+            <ExportToExcel
+              data={dataToExport}
+              filename="news_data"
+              sheetName="News"
+              titlePage="Lista de categorias"
+              imageSrc="http://localhost:5173/logo.png"
+              orientation="landscape"
+              scale={0.8}
+            />
           </div>
 
           <div className="w-full max-w-sm">
             <InputWithButton
+              onChange={e => setTermForSearch(e.target.value)}
               placeholder="Digite algo"
               // buttonText="Enviar"
               icon={<IoSearchSharp size={20} />}
-              onButtonClick={() => {
-                // Lógica a ser executada quando o botão é clicado
-              }}
+              onButtonClick={searchDocs}
             />
           </div>
         </div>
@@ -227,17 +270,17 @@ function News() {
             <p className="text-xs flex flex-row justify-start items-center gap-1">
               Mostrando
               <strong className="text-dark dark:text-light font-semibold">
-                1
+                {rowsData?.length !== undefined ? '1' : '0'}
               </strong>
               a
               <strong className="text-dark dark:text-light font-semibold">
-                8
+                {rowsData?.length !== undefined ? rowsData?.length : '0'}
               </strong>
               de
               <strong className="text-dark dark:text-light font-semibold">
-                21
+                {totalDocs}
               </strong>
-              Noticias
+              Notícias
             </p>
 
             <div className="flex flex-row justify-center items-center gap-4 ">
@@ -245,12 +288,13 @@ function News() {
                 <span>Registos por página: </span>
                 <SelectCustom
                   options={optionsRowPerPage}
-                  selectedValue={selectedValue}
+                  selectedValue={docsPerPage}
                   onChange={handleSelectChange}
                 />
               </div>
 
               <button
+                onClick={fetchMoreData}
                 type="submit"
                 className="sm:w-auto text-xs font-medium text-dark px-5 py-2.5 text-center flex flex-row justify-center items-center gap-2 bg-gray-50 rounded-lg  border border-gray-300 focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-light dark:focus:ring-blue-500 dark:focus:border-blue-500"
               >
@@ -274,6 +318,14 @@ function News() {
           handleUpdateListing={handleUpdateListing}
           modalEditRowIsOpen={modalEditRowIsOpen}
           setModalEditRowIsOpen={setModalEditRowIsOpen}
+        />
+      )}
+      {modalSeeRowIsOpen && (
+        <ModalSeeNews
+          baseInfo={rowSelect}
+          handleUpdateListing={handleUpdateListing}
+          modalSeeRowIsOpen={modalSeeRowIsOpen}
+          setModalSeeRowIsOpen={setModalSeeRowIsOpen}
         />
       )}
     </div>

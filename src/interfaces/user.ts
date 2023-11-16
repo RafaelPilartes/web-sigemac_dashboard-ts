@@ -1,10 +1,10 @@
-export interface IUser {
+export interface UserInterface {
   id: number
-  user_name: string
-  user_email: string
-  user_phone: string
-  user_password: string
-  user_photo_profile: string
+  name: string
+  email: string
+  phone: string
+  password: string
+  photo: string
   date_create: string
   date_update: string
 }

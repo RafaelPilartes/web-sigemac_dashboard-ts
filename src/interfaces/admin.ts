@@ -1,10 +1,13 @@
-export interface IUsers {
+export interface AdminInterface {
   id: number
-  admin_name: string
-  admin_email: string
-  admin_phone: string
-  admin_password: string
-  admin_photo_profile: string
+  photo: string
+  first_name: string
+  last_name: string
+  phone: string
+  email: string
+  status: string
+  gender: string
+  password: string
   date_create: string
   date_update: string
 }

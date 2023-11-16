@@ -3,14 +3,17 @@ import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppContext } from '../../provider/AppProvider'
 import { DropdownUser } from '../DropdownUser'
+import { useAdminStore } from '../../stores/adminStore'
 
 export const Header = () => {
   const navigate = useNavigate()
   const { menuIsVisible, setMenuIsVisible, isDarkMode, setIsDarkMode } =
     useContext(AppContext)
 
+  const { currentAdminData, removeAdmin } = useAdminStore()
+
   const logOut = () => {
-    alert('logOut')
+    removeAdmin()
   }
 
   const options = [
@@ -20,12 +23,6 @@ export const Header = () => {
       onCLick: logOut
     }
   ]
-  const useInfo = {
-    photo:
-      'https://veja.abril.com.br/wp-content/uploads/2016/06/alx_michael-b-jordan_original.gif?w=620&h=349&crop=1',
-    name: 'Rafael Pilartes',
-    function: 'UX Designer'
-  }
 
   function toggleDark() {
     setIsDarkMode(!isDarkMode)
@@ -66,7 +63,9 @@ export const Header = () => {
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
             </label>
 
-            <DropdownUser user={useInfo} options={options} />
+            {currentAdminData && (
+              <DropdownUser user={currentAdminData} options={options} />
+            )}
           </div>
         </div>
       </header>

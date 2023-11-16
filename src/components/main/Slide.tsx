@@ -13,16 +13,17 @@ import {
   Newspaper,
   Podcast,
   Tag,
-  User
+  User,
+  Speaker
 } from 'lucide-react'
 import AccordionSidBar from '../accordion/AccordionSidBar'
 import { routsNameMain } from '../../data/routsName'
 import { AppContext } from '../../provider/AppProvider'
 import { LiaAdversal } from 'react-icons/lia'
 import { PiFolderUserBold } from 'react-icons/pi'
+import { RiSpeakLine } from 'react-icons/ri'
 
 export const Slide = () => {
-  const navigate = useNavigate()
   const { menuIsVisible } = useContext(AppContext)
 
   const dash = [
@@ -100,6 +101,14 @@ export const Slide = () => {
       label: 'Publicidades',
       icon: <LiaAdversal className="text-xs" size={18} />,
       to: routsNameMain.advertising,
+
+      notification: 0,
+      accordion: false
+    },
+    {
+      label: 'Opiniões',
+      icon: <RiSpeakLine className="text-xs" size={18} />,
+      to: routsNameMain.opinions,
 
       notification: 0,
       accordion: false

@@ -7,11 +7,14 @@ import { LiaBuysellads } from 'react-icons/lia'
 import { routsNameMain } from '../../data/routsName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { BiNews } from 'react-icons/bi'
+import { useAdminStore } from '../../stores/adminStore'
 
 function Home() {
   const [rowsDataUser, setRowsDataUser] = useState<any[] | null>(null)
   const [rowsDataCandidacy, setRowsDataCandidacy] = useState<any[] | null>(null)
   const [rowsDataMessage, setRowsDataMessage] = useState<any[] | null>(null)
+
+  const { currentAdminData, removeAdmin } = useAdminStore()
 
   const itemsBreadcrumbs = [
     { label: 'Painel', to: routsNameMain.home },
@@ -74,7 +77,9 @@ function Home() {
         <div className="w-full my-14 mx-6 flex flex-col justify-start items-start gap-2">
           <span className="text-2xl font-semibold ">
             Bom dia,{' '}
-            <span className="text-primary-200 ">Sr. Rafael Pilartes</span>
+            <span className="text-primary-200 ">
+              Sr. {currentAdminData?.first_name} {currentAdminData?.last_name}
+            </span>
           </span>
           <span className="font-normal text-base ">
             Tenha um bom dia no trabalho

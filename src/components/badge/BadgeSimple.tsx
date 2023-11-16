@@ -1,9 +1,10 @@
 interface BadgeSimpleProps {
-  color: 'red' | 'blue' | 'green' | 'gray'
+  color: 'red' | 'blue' | 'green' | 'gray' | 'black'
   label: string
+  bg?: string
 }
 
-export function BadgeSimple({ color, label }: BadgeSimpleProps) {
+export function BadgeSimple({ color, label, bg }: BadgeSimpleProps) {
   let colorBadge
 
   switch (color) {
@@ -19,12 +20,16 @@ export function BadgeSimple({ color, label }: BadgeSimpleProps) {
     case 'gray':
       colorBadge = 'bg-gray-200 text-gray-600'
       break
+    case 'black':
+      colorBadge = `text-white`
+      break
 
     default:
       break
   }
   return (
     <span
+      style={{ backgroundColor: bg }}
       className={`flex flex-row justify-center items-center py-2 px-3 text-xs font-medium rounded-md ${colorBadge}`}
     >
       {label}

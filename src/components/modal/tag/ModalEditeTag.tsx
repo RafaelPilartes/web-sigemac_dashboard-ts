@@ -8,16 +8,22 @@ import { z } from 'zod'
 import { customStylesModalCenter } from '../../../styles/custom/modals'
 import { X } from 'lucide-react'
 import { CustomInput } from '../../input/InputLabel'
+import { TagInterface } from '../../../interfaces/tag'
+import { transformedText } from '../../../utils/formattedString'
+import { TagViewModel } from '../../../viewModel/TagViewModel'
+import { useState } from 'react'
+import { showToast } from '../../../utils/toasts'
+import { ToastContainer } from 'react-toastify'
 
 type modalType = {
-  baseInfo: any
+  baseInfo: TagInterface
   modalEditRowIsOpen: boolean
   handleUpdateListing: () => void
   setModalEditRowIsOpen: (e: boolean) => void
 }
 
 const formSchema = z.object({
-  name_tag: z
+  tag: z
     .string()
     .nonempty('O nome da tag é obrigatório!')
     .refine(value => value, {
@@ -27,15 +33,24 @@ const formSchema = z.object({
 
 type formType = z.infer<typeof formSchema>
 
+// interface InitialValuesInterface extends TagInterface {
+//   id?: string
+// }
+
 export function ModalEditTag({
   baseInfo,
   modalEditRowIsOpen,
   handleUpdateListing,
   setModalEditRowIsOpen
 }: modalType) {
-  const initialValues = {
-    name_tag: baseInfo.name_tag
+  const initialValues: TagInterface = {
+    tag: baseInfo.tag,
+    code: baseInfo.code
   }
+
+  const [isSend, setIsSend] = useState<boolean>(false)
+
+  const tagViewModel = new TagViewModel()
 
   const {
     control,
@@ -54,8 +69,41 @@ export function ModalEditTag({
   }
 
   async function handleSubmitData(dataForm: any) {
-    alert('sss')
-    console.log(dataForm)
+    setIsSend(true)
+
+    try {
+      const dataToSave = {
+        ...dataForm,
+        code: transformedText(dataForm.tag)
+      }
+
+      const response = await tagViewModel.updateTagData(
+        baseInfo.id as string,
+        dataToSave
+      )
+
+      console.log(response)
+
+      if (response.data.error) {
+        showToast('error', response.data.msg as string)
+      } else {
+        showToast('success', response.data.msg as string)
+
+        setTimeout(() => {
+          setIsSend(false)
+          closeModal()
+        }, 4000)
+
+        handleUpdateListing()
+      }
+    } catch (error) {
+      console.log(error)
+      setIsSend(false)
+
+      showToast('error', String(error) as string)
+    }
+
+    setIsSend(false)
   }
 
   return (
@@ -69,6 +117,8 @@ export function ModalEditTag({
         contentLabel="Example Modal"
       >
         <div className="w-full h-full flex items-center justify-center ">
+          <ToastContainer />
+
           <div className="w-full h-auto max-h-[90%] max-w-3xl flex flex-col items-center p-0  rounded-md overflow-y-auto bg-dark overflow-x-hidden scroll-smooth">
             <div className="w-full py-4 px-5 flex flex-row justify-between items-center border-b-[1px] border-gray-600 ">
               <p className="text-xl font-medium text-light">Editar tag</p>
@@ -87,11 +137,11 @@ export function ModalEditTag({
             >
               <CustomInput
                 type="text"
-                htmlFor="name_tag"
+                htmlFor="tag"
                 label="Nome da tag"
                 placeholder="Ex.: Tecnologia"
                 control={control}
-                error={errors.name_tag}
+                error={errors.tag}
               />
 
               <div className="w-full pt-4 flex flex-row justify-between items-center border-t-[1px] border-gray-600 ">

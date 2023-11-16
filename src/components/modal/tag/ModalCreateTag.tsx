@@ -6,9 +6,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
 import { customStylesModalCenter } from '../../../styles/custom/modals'
-import { X } from 'lucide-react'
+import { Loader2, X } from 'lucide-react'
 import { CustomInput } from '../../input/InputLabel'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { TagViewModel } from '../../../viewModel/TagViewModel'
+import { showToast } from '../../../utils/toasts'
+import { TagInterface } from '../../../interfaces/tag'
+import { transformedText } from '../../../utils/formattedString'
+import { ToastContainer } from 'react-toastify'
 
 type modalType = {
   handleUpdateListing: () => void
@@ -17,7 +22,7 @@ type modalType = {
 }
 
 const formSchema = z.object({
-  name_tag: z
+  tag: z
     .string()
     .nonempty('O nome da tag é obrigatório!')
     .refine(value => value, {
@@ -32,8 +37,9 @@ export function ModalCreateTag({
   modalCreateRowIsOpen,
   setModalCreateRowIsOpen
 }: modalType) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [imagesSelect, setImagesSelect] = useState<string>('')
+  const [isSend, setIsSend] = useState<boolean>(false)
+
+  const tagViewModel = new TagViewModel()
 
   const {
     control,
@@ -50,17 +56,44 @@ export function ModalCreateTag({
     // references are now sync'd and can be accessed.
   }
 
-  const onImageChange = (e: any) => {
-    const [file] = e.target.files
-    const photo = e.target.files[0]
-    setSelectedFile(photo)
-    setImagesSelect(URL.createObjectURL(file))
+  async function handleSubmitForm(dataForm: any) {
+    setIsSend(true)
+
+    try {
+      const dataToSave = {
+        ...dataForm,
+        code: transformedText(dataForm.tag)
+      }
+
+      const response = await tagViewModel.createTag(dataToSave)
+
+      console.log(response)
+
+      if (response.data.error) {
+        showToast('error', response.data.msg as string)
+      } else {
+        showToast('success', response.data.msg as string)
+
+        setTimeout(() => {
+          setIsSend(false)
+          closeModal()
+        }, 4000)
+
+        handleUpdateListing()
+      }
+    } catch (error) {
+      console.log(error)
+      setIsSend(false)
+
+      showToast('error', String(error) as string)
+    }
+
+    setIsSend(false)
   }
 
-  async function handleLogin(dataForm: any) {
-    alert('sss')
-    console.log(dataForm)
-  }
+  useEffect(() => {
+    setIsSend(false)
+  }, [])
 
   return (
     <>
@@ -73,11 +106,11 @@ export function ModalCreateTag({
         contentLabel="Example Modal"
       >
         <div className="w-full h-full flex items-center justify-center ">
+          <ToastContainer />
+
           <div className="w-full h-auto max-h-[90%] max-w-3xl flex flex-col items-center p-0  rounded-md overflow-y-auto bg-dark overflow-x-hidden scroll-smooth">
             <div className="w-full py-4 px-5 flex flex-row justify-between items-center border-b-[1px] border-gray-600 ">
-              <p className="text-xl font-medium text-light">
-                Criar administrador
-              </p>
+              <p className="text-xl font-medium text-light">Criar tag</p>
 
               <button
                 onClick={closeModal}
@@ -88,16 +121,16 @@ export function ModalCreateTag({
             </div>
 
             <form
-              onSubmit={handleSubmit(handleLogin)}
+              onSubmit={handleSubmit(handleSubmitForm)}
               className="w-full p-6 flex flex-col justify-center items-center gap-6"
             >
               <CustomInput
                 type="text"
-                htmlFor="name_tag"
+                htmlFor="tag"
                 label="Nome da tag"
                 placeholder="Ex.: tecnologia"
                 control={control}
-                error={errors.name_tag}
+                error={errors.tag}
               />
 
               <div className="w-full pt-4 flex flex-row justify-between items-center border-t-[1px] border-gray-600 ">
@@ -105,7 +138,8 @@ export function ModalCreateTag({
                   type="submit"
                   className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                 >
-                  Criar
+                  {!isSend && 'Criar'}
+                  {isSend && <Loader2 size={20} className="animate-spin" />}
                 </button>
               </div>
             </form>

@@ -20,6 +20,8 @@ import Newsletters from '../pages/main/newsletters'
 import DownloadPermissions from '../pages/main/downloadPermissions'
 import Comments from '../pages/main/comments'
 import Newspapers from '../pages/main/newspapers'
+import { useAdminStore } from '../stores/adminStore'
+import Opinions from '../pages/main/opinions'
 
 // const Home = React.lazy(() => import('../pages/main/home'))
 
@@ -27,10 +29,19 @@ type Props = {
   children: JSX.Element
 }
 
-function PrivateLogin({ children }: Props) {
-  const user = null
+function Private({ children }: Props) {
+  const { currentAdminData } = useAdminStore()
 
-  if (user != null) {
+  if (!currentAdminData) {
+    return <Navigate to={'/login'} />
+  }
+
+  return children
+}
+function PrivateLogin({ children }: Props) {
+  const { currentAdminData } = useAdminStore()
+
+  if (currentAdminData) {
     return <Navigate to={'/'} />
   }
 
@@ -47,7 +58,9 @@ export function Router() {
             index
             element={
               <React.Suspense fallback={<Loading />}>
-                <Home />
+                <Private>
+                  <Home />
+                </Private>
               </React.Suspense>
             }
           />
@@ -56,7 +69,9 @@ export function Router() {
             path={routsNameMain.admins}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Admins />
+                <Private>
+                  <Admins />
+                </Private>
               </React.Suspense>
             }
           />
@@ -65,7 +80,9 @@ export function Router() {
             path={routsNameMain.permissions}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Permission />
+                <Private>
+                  <Permission />
+                </Private>
               </React.Suspense>
             }
           />
@@ -74,7 +91,9 @@ export function Router() {
             path={routsNameMain.news}
             element={
               <React.Suspense fallback={<Loading />}>
-                <News />
+                <Private>
+                  <News />
+                </Private>
               </React.Suspense>
             }
           />
@@ -83,7 +102,9 @@ export function Router() {
             path={routsNameMain.categories}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Categories />
+                <Private>
+                  <Categories />
+                </Private>
               </React.Suspense>
             }
           />
@@ -92,7 +113,9 @@ export function Router() {
             path={routsNameMain.tags}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Tags />
+                <Private>
+                  <Tags />
+                </Private>
               </React.Suspense>
             }
           />
@@ -101,7 +124,9 @@ export function Router() {
             path={routsNameMain.authors}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Authors />
+                <Private>
+                  <Authors />
+                </Private>
               </React.Suspense>
             }
           />
@@ -110,7 +135,20 @@ export function Router() {
             path={routsNameMain.advertising}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Advertising />
+                <Private>
+                  <Advertising />
+                </Private>
+              </React.Suspense>
+            }
+          />
+          {/* opinions */}
+          <Route
+            path={routsNameMain.opinions}
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Private>
+                  <Opinions />
+                </Private>
               </React.Suspense>
             }
           />
@@ -119,7 +157,9 @@ export function Router() {
             path={routsNameMain.videos}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Videos />
+                <Private>
+                  <Videos />
+                </Private>
               </React.Suspense>
             }
           />
@@ -128,7 +168,9 @@ export function Router() {
             path={routsNameMain.download_permissions}
             element={
               <React.Suspense fallback={<Loading />}>
-                <DownloadPermissions />
+                <Private>
+                  <DownloadPermissions />
+                </Private>
               </React.Suspense>
             }
           />
@@ -137,7 +179,9 @@ export function Router() {
             path={routsNameMain.newsletter}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Newsletters />
+                <Private>
+                  <Newsletters />
+                </Private>
               </React.Suspense>
             }
           />
@@ -146,7 +190,9 @@ export function Router() {
             path={routsNameMain.comments}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Comments />
+                <Private>
+                  <Comments />
+                </Private>
               </React.Suspense>
             }
           />
@@ -155,7 +201,9 @@ export function Router() {
             path={routsNameMain.newspapers}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Newspapers />
+                <Private>
+                  <Newspapers />
+                </Private>
               </React.Suspense>
             }
           />
@@ -165,7 +213,9 @@ export function Router() {
             path={routsNameMain.users}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Users />
+                <Private>
+                  <Users />
+                </Private>
               </React.Suspense>
             }
           />
@@ -175,7 +225,9 @@ export function Router() {
             path={routsNameMain.messages}
             element={
               <React.Suspense fallback={<Loading />}>
-                <Messages />
+                <Private>
+                  <Messages />
+                </Private>
               </React.Suspense>
             }
           />

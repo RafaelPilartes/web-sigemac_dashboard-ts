@@ -9,46 +9,39 @@ import { FileDown, Plus } from 'lucide-react'
 import { TableRow } from '../../components/table/TableRowAuthor'
 import { SelectCustom } from '../../components/selects/SelectCustom'
 import { ModalCreateAuthor } from '../../components/modal/author/ModalCreateAuthor'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ModalEditAuthor } from '../../components/modal/author/ModalEditAuthor'
+import { AuthorInterface } from '../../interfaces/author'
+import { AuthorViewModel } from '../../viewModel/authorViewModel'
+import ExportToExcel from '../../components/ExportToExcel'
+import { ToastContainer } from 'react-toastify'
+import { showToastRight } from '../../utils/toasts'
 
 function Authors() {
+  const [rowsData, setRowsData] = useState<AuthorInterface[] | null>(null)
+
+  const [dataToExport, setDataToExport] = useState<any[]>([])
+
   const [modalEditRowIsOpen, setModalEditRowIsOpen] = useState<boolean>(false)
   const [modalCreateRowIsOpen, setModalCreateRowIsOpen] =
     useState<boolean>(false)
   const [rowSelect, setRowSelect] = useState<any | null>(null)
-  const [selectedValue, setSelectedValue] = useState('8')
 
+  // Search
+  const [termForSearch, setTermForSearch] = useState<string>('')
+
+  const [docsPerPage, setDocsPerPage] = useState<string>('8')
+  const [totalDocs, setTotalDocs] = useState<number>(0)
+
+  const authorViewModel = new AuthorViewModel()
+
+  // Breadcrumbs
   const itemsBreadcrumbs = [
     { label: 'Inicio', to: routsNameMain.home },
     { label: 'Autor', to: routsNameMain.authors },
     { label: 'Listagem' }
   ]
-  const tableData = [
-    {
-      id: 1,
-      author_photo: 'foto_autor1.jpg',
-      name_author: 'Nome do Autor 1',
-      title_author: 'Título do Autor 1',
-      description_author: 'Descrição do Autor 1',
-      email_author: 'autor1@email.com',
-      phone_author: '923-456-7890',
-      date_create: '2023-10-13',
-      date_update: '2023-10-13'
-    },
-    {
-      id: 2,
-      author_photo: 'foto_autor2.jpg',
-      name_author: 'Nome do Autor 2',
-      title_author: 'Título do Autor 2',
-      description_author: 'Descrição do Autor 2',
-      email_author: 'autor2@email.com',
-      phone_author: '927-654-3210',
-      date_create: '2023-10-14',
-      date_update: '2023-10-14'
-    }
-    // Adicione mais objetos aqui com os dados das outras linhas da tabela
-  ]
+  // Row Per Page
   const optionsRowPerPage = [
     { value: '8', label: '8' },
     { value: '14', label: '14' },
@@ -59,7 +52,7 @@ function Authors() {
     { value: 'Todos', label: 'Todos' }
   ]
 
-  const rowsTable = tableData.map((item, index) => {
+  const rowsTable = rowsData?.map((item, index) => {
     return (
       <TableRow
         key={index}
@@ -69,51 +62,120 @@ function Authors() {
       />
     )
   })
-  const fetchData = () => {
-    // fetchData()
+
+  // Get data
+  function fetchData(limit: string) {
+    // Clear
+    setRowsData(null)
+
+    // Get
+    authorViewModel.getAllAuthorData().then(response => {
+      if (response.data.error) {
+        showToastRight('error', response.data.msg as string)
+      } else {
+        const arrayData = response.data.data as AuthorInterface[]
+        setTotalDocs(arrayData.length)
+        console.log(arrayData)
+
+        const listData = arrayData.slice(0, Number(limit))
+
+        setRowsData(listData as AuthorInterface[])
+      }
+    })
   }
-  function openModalEditRow(item: any) {
-    setRowSelect(item)
-    setModalEditRowIsOpen(true)
+
+  // Get more data
+  function fetchMoreData() {
+    // setDocsPerPage(docsPerPage + selectedValue)
+    fetchData(docsPerPage + docsPerPage)
   }
-  function openModalCreateRow() {
-    setModalCreateRowIsOpen(true)
+
+  // Search cata
+  async function searchDocs() {
+    if (termForSearch == '') {
+      fetchData(docsPerPage)
+    } else {
+      authorViewModel.getAllAuthorByTermData(termForSearch).then(response => {
+        console.log(response)
+
+        setRowsData(response.data.data as AuthorInterface[])
+        console.log(response)
+      })
+    }
   }
+
+  // Update Listing
+  const handleUpdateListing = () => {
+    fetchData(docsPerPage)
+  }
+
+  // Delete row
   function handleDeleteRow(id: string) {
-    alert(id)
     swal({
       title: 'Tem certeza?',
-      text: 'Uma vez excluído, você não poderá recuperar este usuario!',
+      text: 'Uma vez excluído, você não poderá recuperar está author!',
       buttons: ['Cancelar', 'Confirmar'],
       icon: 'warning',
       dangerMode: true
     }).then(async willDelete => {
       if (willDelete) {
-        try {
-          // const response = await deleteEmployees(documentId)
+        await authorViewModel.deleteAuthorData(id).then(response => {
+          console.log(response)
 
-          swal('Deletado com sucesso', {
-            icon: 'success'
-          })
-        } catch (error) {
-          swal(`Erro ao deletar registo: ${error}`, {
-            icon: 'error'
-          })
-          console.error('', error)
-        }
+          if (response.data.error) {
+            swal(`Erro ao deletar registo: ${response.data.msg}`, {
+              icon: 'error'
+            })
+            console.error('', response.data.msg)
+          } else {
+            swal('Deletado com sucesso', {
+              icon: 'success'
+            })
+
+            fetchData(docsPerPage)
+          }
+        })
       } else {
-        swal('O authoristrador está seguro!', {
+        swal('A author está seguro!', {
           icon: 'error'
         })
       }
     })
   }
-  const handleUpdateListing = () => {
-    fetchData()
-  }
+
+  // Change rows per page
   const handleSelectChange = (value: string) => {
-    setSelectedValue(value)
+    setDocsPerPage(value)
+    fetchData(value)
   }
+
+  // Open modal edit
+  function openModalEditRow(item: any) {
+    setRowSelect(item)
+    setModalEditRowIsOpen(true)
+  }
+
+  // Open modal create
+  function openModalCreateRow() {
+    setModalCreateRowIsOpen(true)
+  }
+
+  useEffect(() => {
+    fetchData(docsPerPage)
+  }, [])
+
+  useEffect(() => {
+    const newData = rowsData?.map(doc => ({
+      Id: `${doc.id}`,
+      Nome: doc.name,
+      Titulo: doc.title,
+      Descricao: doc.description,
+      Data_de_criacao: doc.date_create,
+      Ultima_atualização: doc.date_update
+    }))
+
+    setDataToExport(newData as any)
+  }, [rowsData])
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-start gap-6">
@@ -129,22 +191,26 @@ function Authors() {
               className="py-2 px-4 rounded-lg bg-primary-200 text-white hover:bg-primary-500 active:bg-primary-700 flex flex-row items-center justify-center gap-4 transition-all duration-300 "
             >
               <Plus />
-              Adicionar usuário
+              Adicionar autor
             </button>
-            <button className="py-2 px-4 rounded-lg border-[1px] border-gray-200 dark:border-gray-600 hover:bg-gray-300/20 dark:hover:bg-gray-500/20 active:bg-gray-200 flex flex-row items-center justify-center gap-4 transition-all duration-300">
-              <FileDown />
-              Exportar
-            </button>
+            <ExportToExcel
+              data={dataToExport}
+              filename="author_data"
+              sheetName="Author"
+              titlePage="Lista de categorias"
+              imageSrc="http://localhost:5173/logo.png"
+              orientation="landscape"
+              scale={0.8}
+            />
           </div>
 
           <div className="w-full max-w-sm">
             <InputWithButton
+              onChange={e => setTermForSearch(e.target.value)}
               placeholder="Digite algo"
               // buttonText="Enviar"
               icon={<IoSearchSharp size={20} />}
-              onButtonClick={() => {
-                // Lógica a ser executada quando o botão é clicado
-              }}
+              onButtonClick={searchDocs}
             />
           </div>
         </div>
@@ -163,11 +229,11 @@ function Authors() {
                   Id
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Nome
+                  Autor
                 </th>
 
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
-                  Número
+                  Descrição
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
                   Registo
@@ -185,17 +251,17 @@ function Authors() {
             <p className="text-xs flex flex-row justify-start items-center gap-1">
               Mostrando
               <strong className="text-dark dark:text-light font-semibold">
-                1
+                {rowsData?.length !== undefined ? '1' : '0'}
               </strong>
               a
               <strong className="text-dark dark:text-light font-semibold">
-                8
+                {rowsData?.length !== undefined ? rowsData?.length : '0'}
               </strong>
               de
               <strong className="text-dark dark:text-light font-semibold">
-                21
+                {totalDocs}
               </strong>
-              Autor
+              Categorias
             </p>
 
             <div className="flex flex-row justify-center items-center gap-4 ">
@@ -203,12 +269,13 @@ function Authors() {
                 <span>Registos por página: </span>
                 <SelectCustom
                   options={optionsRowPerPage}
-                  selectedValue={selectedValue}
+                  selectedValue={docsPerPage}
                   onChange={handleSelectChange}
                 />
               </div>
 
               <button
+                onClick={fetchMoreData}
                 type="submit"
                 className="sm:w-auto text-xs font-medium text-dark px-5 py-2.5 text-center flex flex-row justify-center items-center gap-2 bg-gray-50 rounded-lg  border border-gray-300 focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-light dark:focus:ring-blue-500 dark:focus:border-blue-500"
               >

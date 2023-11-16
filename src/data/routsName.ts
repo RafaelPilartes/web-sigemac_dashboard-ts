@@ -10,6 +10,7 @@ export const routsNameMain = {
   tags: `/tags`,
   authors: `/authors`,
   advertising: `/advertising`,
+  opinions: `/opinions`,
   videos: `/videos`,
   podcast: `/podcast`,
   newspapers: `/newspapers`,

@@ -1,4 +1,4 @@
-import Modal from 'react-modal'
+import { useEffect, useState } from 'react'
 
 // Form
 import { useForm } from 'react-hook-form'
@@ -7,8 +7,13 @@ import { z } from 'zod'
 
 import { customStylesModalCenter } from '../../../styles/custom/modals'
 import { X } from 'lucide-react'
+import Modal from 'react-modal'
 import { CustomInput } from '../../input/InputLabel'
-import { useEffect, useState } from 'react'
+import { UploadViewModel } from '../../../viewModel/UploadViewModel'
+import { AuthorViewModel } from '../../../viewModel/authorViewModel'
+import { showToast } from '../../../utils/toasts'
+import { TextAreaLabel } from '../../textarea/TextAreaLabel'
+import { ToastContainer } from 'react-toastify'
 
 type modalType = {
   handleUpdateListing: () => void
@@ -17,49 +22,26 @@ type modalType = {
 }
 
 const formSchema = z.object({
-  first_name: z
+  name: z
     .string()
     .nonempty('O seu nome é obrigatório!')
-    .min(6, 'O seu nome completo tem de no mínimo 6 caracteres')
+    .min(6, 'O seu nome completo tem de ter no mínimo 6 caracteres')
     .refine(value => value, {
       message: 'Por favor, preencha este campo'
     }),
-  last_name: z
+  title: z
     .string()
-    .nonempty('O seu nome é obrigatório!')
-    .min(6, 'O seu nome completo tem de no mínimo 6 caracteres')
+    .nonempty('O titulo é obrigatório!')
+    .min(6, 'O titulo tem de ter no mínimo 6 caracteres')
     .refine(value => value, {
       message: 'Por favor, preencha este campo'
     }),
-  phone: z
+  description: z
     .string()
-    .refine(value => /^\+?[0-9]+$/g.test(value), {
-      message: 'Formato de número invalido'
-    })
+    .nonempty('A descrição é obrigatório!')
+    .min(6, 'A descrição tem de ter no mínimo 6 caracteres')
     .refine(value => value, {
-      message: 'Por favor, preencha este campo.'
-    }),
-  email: z
-    .string()
-    .nonempty('O email é obrigatório!')
-    .email('Formato de email invalido')
-    .toLowerCase()
-    .trim(),
-  password: z
-    .string()
-    .nonempty('A palavra-passe é obrigatório!')
-    .min(6, 'A palavra-passe tem de no mínimo 6 caracteres')
-    .trim()
-    .refine(value => value, {
-      message: 'Por favor, preencha este campo.'
-    }),
-  confirm_password: z
-    .string()
-    .nonempty('A palavra-passe é obrigatório!')
-    .min(6, 'A palavra-passe tem de no mínimo 6 caracteres')
-    .trim()
-    .refine(value => value, {
-      message: 'Por favor, preencha este campo.'
+      message: 'Por favor, preencha este campo'
     })
 })
 
@@ -70,9 +52,18 @@ export function ModalCreateAuthor({
   modalCreateRowIsOpen,
   setModalCreateRowIsOpen
 }: modalType) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isSend, setIsSend] = useState<boolean>(false)
+
+  // Image
+  const [fileImageSelect, setFileImageSelect] = useState<string>('')
   const [imagesSelect, setImagesSelect] = useState<string>('')
 
+  const authorViewModel = new AuthorViewModel()
+  const uploadViewModel = new UploadViewModel()
+
+  const maxFiles = 4
+
+  // useForm
   const {
     register,
     control,
@@ -82,23 +73,81 @@ export function ModalCreateAuthor({
     resolver: zodResolver(formSchema)
   })
 
-  function closeModal() {
-    setModalCreateRowIsOpen(false)
-  }
-  function afterOpenModal() {
-    // references are now sync'd and can be accessed.
-  }
-
   const onImageChange = (e: any) => {
     const [file] = e.target.files
-    const photo = e.target.files[0]
-    setSelectedFile(photo)
+    const image = e.target.files[0]
+    setFileImageSelect(image)
     setImagesSelect(URL.createObjectURL(file))
   }
 
-  async function handleLogin(dataForm: any) {
-    alert('sss')
-    console.log(dataForm)
+  async function handleUpload(): Promise<{
+    urlAuthorImage: string
+  }> {
+    // ImageAuthor
+    const imageAuthorData = new FormData()
+    imageAuthorData.append('imageAuthor', fileImageSelect)
+
+    const responseUploadAuthorImage = await uploadViewModel.uploadImageAuthor(
+      imageAuthorData
+    )
+    if (responseUploadAuthorImage.error) {
+      setIsSend(false)
+      throw new Error(responseUploadAuthorImage.msg as string)
+    }
+
+    const urlAuthorImage = responseUploadAuthorImage.imageUrl as string
+
+    return {
+      urlAuthorImage
+    }
+  }
+
+  async function handleSubmitForm(dataForm: any) {
+    setIsSend(true)
+
+    try {
+      const result = await handleUpload()
+
+      const { urlAuthorImage } = result
+
+      const dataToSave = {
+        ...dataForm,
+        photo: urlAuthorImage
+      }
+
+      const response = await authorViewModel.createAuthor(dataToSave)
+
+      console.log(response)
+
+      if (response.data.error) {
+        showToast('error', response.data.msg as string)
+      } else {
+        showToast('success', response.data.msg as string)
+
+        setTimeout(() => {
+          setIsSend(false)
+          closeModal()
+        }, 4000)
+
+        handleUpdateListing()
+      }
+    } catch (error) {
+      console.log(error)
+      setIsSend(false)
+
+      showToast('error', String(error) as string)
+    }
+
+    setIsSend(false)
+  }
+
+  // Close modal
+  function closeModal() {
+    setModalCreateRowIsOpen(false)
+  }
+  // After close modal
+  function afterOpenModal() {
+    // references are now sync'd and can be accessed.
   }
 
   return (
@@ -112,6 +161,8 @@ export function ModalCreateAuthor({
         contentLabel="Example Modal"
       >
         <div className="w-full h-full flex items-center justify-center ">
+          <ToastContainer />
+
           <div className="w-full h-auto max-h-[90%] max-w-3xl flex flex-col items-center p-0  rounded-md overflow-y-auto bg-dark overflow-x-hidden scroll-smooth">
             <div className="w-full py-4 px-5 flex flex-row justify-between items-center border-b-[1px] border-gray-600 ">
               <p className="text-xl font-medium text-light">Criar autor</p>
@@ -125,7 +176,7 @@ export function ModalCreateAuthor({
             </div>
 
             <form
-              onSubmit={handleSubmit(handleLogin)}
+              onSubmit={handleSubmit(handleSubmitForm)}
               className="w-full p-6 flex flex-col justify-center items-center gap-6"
             >
               <div className="w-full flex flex-col items-start justify-start">
@@ -134,30 +185,32 @@ export function ModalCreateAuthor({
                     htmlFor="dropzone-file"
                     className="w-full h-40 flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-70 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-800 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 transition-all duration-300 relative overflow-hidden"
                   >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg
-                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 20 16"
-                      >
-                        <path
-                          stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                        />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span>{' '}
-                        {/* or drag and drop */}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        PNG, JPG or JPEG (MAX. 3Mb)
-                      </p>
-                    </div>
+                    {!imagesSelect && (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg
+                          className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 20 16"
+                        >
+                          <path
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                          />
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold">Click to upload</span>{' '}
+                          {/* or drag and drop */}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          PNG, JPG or JPEG (MAX. 3Mb)
+                        </p>
+                      </div>
+                    )}
 
                     {imagesSelect && (
                       <img
@@ -169,6 +222,7 @@ export function ModalCreateAuthor({
                     <input
                       id="dropzone-file"
                       type="file"
+                      accept="image/jpeg, image/png, image/jpg"
                       className="hidden"
                       onChange={onImageChange}
                     />
@@ -179,57 +233,30 @@ export function ModalCreateAuthor({
               <div className="w-full grid gap-6 md:grid-cols-2">
                 <CustomInput
                   type="text"
-                  htmlFor="first_name"
-                  label="Primeiro nome"
-                  placeholder="Ex.: Rafael"
+                  htmlFor="name"
+                  label="Nome completo"
+                  placeholder="Ex.: Rafael Pilartes"
                   control={control}
-                  error={errors.first_name}
+                  error={errors.name}
                 />
                 <CustomInput
                   type="text"
-                  htmlFor="last_name"
-                  label="Ultimo nome"
-                  placeholder="Ex.: Pilartes"
+                  htmlFor="title"
+                  label="O titulo do autor"
+                  placeholder="Ex.: Autor Sênior"
                   control={control}
-                  error={errors.last_name}
+                  error={errors.title}
                 />
               </div>
 
-              <div className="w-full grid gap-6 md:grid-cols-2">
-                <CustomInput
-                  type="phone"
-                  htmlFor="phone"
-                  label="Número de telefone"
-                  placeholder="Ex.: 923414621"
+              <div className="w-full grid gap-6 md:grid-cols-1">
+                <TextAreaLabel
+                  // isDisabled={true}
+                  htmlFor="description"
+                  label="Descrição do autor"
+                  placeholder="Ex.: Descrição 1"
                   control={control}
-                  error={errors.phone}
-                />
-                <CustomInput
-                  type="email"
-                  htmlFor="email"
-                  label="Endereço de email"
-                  placeholder="Ex.: geral@rafaelpilartes.com"
-                  control={control}
-                  error={errors.email}
-                />
-              </div>
-
-              <div className="w-full grid gap-6 md:grid-cols-2">
-                <CustomInput
-                  type="password"
-                  htmlFor="password"
-                  label="Password"
-                  placeholder="•••••••••"
-                  control={control}
-                  error={errors.password}
-                />
-                <CustomInput
-                  type="password"
-                  htmlFor="confirm_password"
-                  label="Confirm password"
-                  placeholder="•••••••••"
-                  control={control}
-                  error={errors.confirm_password}
+                  error={errors.description}
                 />
               </div>
 

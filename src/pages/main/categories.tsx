@@ -6,40 +6,41 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { InputWithButton } from '../../components/input/InputWithButton'
 import { IoSearchSharp } from 'react-icons/io5'
 import { FileDown, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TableRow } from '../../components/table/TableRowCategory'
 import { SelectCustom } from '../../components/selects/SelectCustom'
 import { ModalCreateCategory } from '../../components/modal/category/ModalCreateCategory'
 import { ModalEditCategory } from '../../components/modal/category/ModalEditeCategory'
-import { ICategory } from '../../interfaces/category'
+import { CategoryInterface } from '../../interfaces/category'
+import { CategoryViewModel } from '../../viewModel/CategoryViewModel'
+import ExportToExcel from '../../components/ExportToExcel'
+import { ToastContainer } from 'react-toastify'
+import { showToastRight } from '../../utils/toasts'
 
 function Categories() {
+  const [rowsData, setRowsData] = useState<CategoryInterface[] | null>(null)
+
+  const [dataToExport, setDataToExport] = useState<any[]>([])
+
   const [modalEditRowIsOpen, setModalEditRowIsOpen] = useState<boolean>(false)
   const [modalCreateRowIsOpen, setModalCreateRowIsOpen] =
     useState<boolean>(false)
   const [rowSelect, setRowSelect] = useState<any | null>(null)
-  const [selectedValue, setSelectedValue] = useState('8')
+
+  // Search
+  const [termForSearch, setTermForSearch] = useState<string>('')
+
+  const [docsPerPage, setDocsPerPage] = useState<string>('8')
+  const [totalDocs, setTotalDocs] = useState<number>(0)
+
+  const categoryViewModel = new CategoryViewModel()
 
   const itemsBreadcrumbs = [
     { label: 'Inicio', to: routsNameMain.home },
-    { label: 'Categorias', to: routsNameMain.admins },
+    { label: 'Categorias', to: routsNameMain.categories },
     { label: 'Listagem' }
   ]
-  const tableData: ICategory[] = [
-    {
-      id: 1,
-      name_category: 'Categoria 1',
-      date_create: '2023-10-13',
-      date_update: '2023-10-13'
-    },
-    {
-      id: 2,
-      name_category: 'Categoria 2',
-      date_create: '2023-10-14',
-      date_update: '2023-10-14'
-    }
-    // Adicione mais objetos aqui com os dados das outras linhas da tabela
-  ]
+
   const optionsRowPerPage = [
     { value: '8', label: '8' },
     { value: '14', label: '14' },
@@ -50,7 +51,7 @@ function Categories() {
     { value: 'Todos', label: 'Todos' }
   ]
 
-  const rowsTable = tableData.map((item, index) => {
+  const rowsTable = rowsData?.map((item, index) => {
     return (
       <TableRow
         key={index}
@@ -60,59 +61,132 @@ function Categories() {
       />
     )
   })
-  const fetchData = () => {
-    // fetchData()
+
+  // Get data
+  function fetchData(limit: string) {
+    // Clear
+    setRowsData(null)
+
+    // Get
+    categoryViewModel.getAllCategoryData().then(response => {
+      if (response.data.error) {
+        showToastRight('error', response.data.msg as string)
+      } else {
+        const arrayData = response.data.data as CategoryInterface[]
+        setTotalDocs(arrayData.length)
+        console.log(arrayData)
+
+        const listData = arrayData.slice(0, Number(limit))
+
+        setRowsData(listData as CategoryInterface[])
+      }
+    })
   }
-  function openModalEditRow(item: any) {
-    setRowSelect(item)
-    setModalEditRowIsOpen(true)
+
+  // Get more data
+  function fetchMoreData() {
+    // setDocsPerPage(docsPerPage + selectedValue)
+    fetchData(docsPerPage + docsPerPage)
   }
-  function openModalCreateRow(item: any) {
-    setModalCreateRowIsOpen(true)
+
+  // Search cata
+  async function searchDocs() {
+    if (termForSearch == '') {
+      fetchData(docsPerPage)
+    } else {
+      categoryViewModel
+        .getAllCategoryByTermData(termForSearch)
+        .then(response => {
+          console.log(response)
+
+          setRowsData(response.data.data as CategoryInterface[])
+          console.log(response)
+        })
+    }
   }
+
+  // Update Listing
+  const handleUpdateListing = () => {
+    fetchData(docsPerPage)
+  }
+
+  // Delete row
   function handleDeleteRow(id: string) {
-    alert(id)
     swal({
       title: 'Tem certeza?',
-      text: 'Uma vez excluído, você não poderá recuperar este usuario!',
+      text: 'Uma vez excluído, você não poderá recuperar está categoria!',
       buttons: ['Cancelar', 'Confirmar'],
       icon: 'warning',
       dangerMode: true
     }).then(async willDelete => {
       if (willDelete) {
-        try {
-          // const response = await deleteEmployees(documentId)
+        await categoryViewModel.deleteCategoryData(id).then(response => {
+          console.log(response)
 
-          swal('Deletado com sucesso', {
-            icon: 'success'
-          })
-        } catch (error) {
-          swal(`Erro ao deletar registo: ${error}`, {
-            icon: 'error'
-          })
-          console.error('', error)
-        }
+          if (response.data.error) {
+            swal(`Erro ao deletar registo: ${response.data.msg}`, {
+              icon: 'error'
+            })
+            console.error('', response.data.msg)
+          } else {
+            swal('Deletado com sucesso', {
+              icon: 'success'
+            })
+
+            fetchData(docsPerPage)
+          }
+        })
       } else {
-        swal('O administrador está seguro!', {
+        swal('A categoria está seguro!', {
           icon: 'error'
         })
       }
     })
   }
-  const handleUpdateListing = () => {
-    fetchData()
-  }
+
+  // Change rows per page
   const handleSelectChange = (value: string) => {
-    setSelectedValue(value)
+    setDocsPerPage(value)
+    fetchData(value)
   }
+
+  // Open modal edit
+  function openModalEditRow(item: any) {
+    setRowSelect(item)
+    setModalEditRowIsOpen(true)
+  }
+
+  // Open modal create
+  function openModalCreateRow() {
+    setModalCreateRowIsOpen(true)
+  }
+
+  useEffect(() => {
+    fetchData(docsPerPage)
+  }, [])
+
+  useEffect(() => {
+    const newData = rowsData?.map(doc => ({
+      Id: `${doc.id}`,
+      Nome_da_category: doc.category,
+      Codigo: doc.code,
+      Cor: doc.color,
+      Data_de_criacao: doc.date_create,
+      Ultima_atualização: doc.date_update
+    }))
+
+    setDataToExport(newData as any)
+  }, [rowsData])
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-start gap-6">
+      <ToastContainer />
+
       <div className="w-full p-6 flex flex-col justify-start items-start gap-6 rounded-md bg-light dark:bg-dark">
         <Breadcrumbs items={itemsBreadcrumbs} />
 
         <h1 className="text-2xl font-bold text-dark dark:text-light ">
-          Categorias
+          Categoria
         </h1>
 
         <div className="w-full flex flex-row items-center justify-between gap-2 ">
@@ -124,20 +198,24 @@ function Categories() {
               <Plus />
               Adicionar categoria
             </button>
-            <button className="py-2 px-4 rounded-lg border-[1px] border-gray-200 dark:border-gray-600 hover:bg-gray-300/20 dark:hover:bg-gray-500/20 active:bg-gray-200 flex flex-row items-center justify-center gap-4 transition-all duration-300">
-              <FileDown />
-              Exportar
-            </button>
+            <ExportToExcel
+              data={dataToExport}
+              filename="category_data"
+              sheetName="Category"
+              titlePage="Lista de categorias"
+              imageSrc="http://localhost:5173/logo.png"
+              orientation="landscape"
+              scale={0.8}
+            />
           </div>
 
           <div className="w-full max-w-sm">
             <InputWithButton
+              onChange={e => setTermForSearch(e.target.value)}
               placeholder="Digite algo"
               // buttonText="Enviar"
               icon={<IoSearchSharp size={20} />}
-              onButtonClick={() => {
-                // Lógica a ser executada quando o botão é clicado
-              }}
+              onButtonClick={searchDocs}
             />
           </div>
         </div>
@@ -145,7 +223,7 @@ function Categories() {
 
       <div className="w-full p-6 flex flex-col justify-start items-start gap-6 rounded-md bg-light dark:bg-dark">
         <h1 className="text-xl font-bold text-dark dark:text-light ">
-          Listagem Categorias
+          Listagem da categoria
         </h1>
 
         <div className="relative w-full overflow-x-auto">
@@ -157,6 +235,12 @@ function Categories() {
                 </th>
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
                   Categoria
+                </th>
+                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
+                  Codigo da categoria
+                </th>
+                <th scope="col" className="px-3 py-3 min-w-[6rem] ">
+                  Cor
                 </th>
 
                 <th scope="col" className="px-3 py-3 min-w-[6rem] ">
@@ -178,15 +262,15 @@ function Categories() {
             <p className="text-xs flex flex-row justify-start items-center gap-1">
               Mostrando
               <strong className="text-dark dark:text-light font-semibold">
-                1
+                {rowsData?.length !== undefined ? '1' : '0'}
               </strong>
               a
               <strong className="text-dark dark:text-light font-semibold">
-                8
+                {rowsData?.length !== undefined ? rowsData?.length : '0'}
               </strong>
               de
               <strong className="text-dark dark:text-light font-semibold">
-                21
+                {totalDocs}
               </strong>
               Categorias
             </p>
@@ -196,12 +280,13 @@ function Categories() {
                 <span>Registos por página: </span>
                 <SelectCustom
                   options={optionsRowPerPage}
-                  selectedValue={selectedValue}
+                  selectedValue={docsPerPage}
                   onChange={handleSelectChange}
                 />
               </div>
 
               <button
+                onClick={fetchMoreData}
                 type="submit"
                 className="sm:w-auto text-xs font-medium text-dark px-5 py-2.5 text-center flex flex-row justify-center items-center gap-2 bg-gray-50 rounded-lg  border border-gray-300 focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-light dark:focus:ring-blue-500 dark:focus:border-blue-500"
               >

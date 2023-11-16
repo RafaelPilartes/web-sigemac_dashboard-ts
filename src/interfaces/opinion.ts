@@ -1,11 +1,12 @@
-export interface IOpinion {
-  id: number
-  title_opinion: string
+export interface OpinionInterface {
+  id?: string
+  title: string
   author_id: string
   category_id: string
-  description_opinion: string
-  views_opinion: number
-  image_opinion: string
-  date_create: string
-  date_update: string
+  description: string
+  cover: string
+  reading_time: string
+  views: number
+  date_create?: string
+  date_update?: string
 }
